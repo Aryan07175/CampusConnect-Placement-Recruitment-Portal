@@ -1,5 +1,6 @@
 package com.campusconnect.controller;
 
+import com.campusconnect.dto.ApplicationDetailsDTO;
 import com.campusconnect.dto.JobPostingRequest;
 import com.campusconnect.dto.RecruiterProfileRequest;
 import com.campusconnect.entity.Application;
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,7 +53,7 @@ public class RecruiterController {
     @GetMapping("/jobs")
     public ResponseEntity<Page<JobPosting>> myJobs(
             @AuthenticationPrincipal UserDetailsImpl user,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(jobPostingService.getByRecruiter(user.getId(), pageable));
     }
 
@@ -70,6 +72,15 @@ public class RecruiterController {
         return ResponseEntity.ok(jobPostingService.update(user.getId(), jobId, req));
     }
 
+    @PatchMapping("/jobs/{jobId}/status")
+    public ResponseEntity<JobPosting> toggleJobStatus(
+            @AuthenticationPrincipal UserDetailsImpl user,
+            @PathVariable Long jobId,
+            @RequestBody Map<String, String> body) {
+        JobPosting.JobStatus status = JobPosting.JobStatus.valueOf(body.get("status"));
+        return ResponseEntity.ok(jobPostingService.updateStatus(user.getId(), jobId, status));
+    }
+
     @DeleteMapping("/jobs/{jobId}")
     public ResponseEntity<Void> deleteJob(
             @AuthenticationPrincipal UserDetailsImpl user,
@@ -78,13 +89,13 @@ public class RecruiterController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Applications ──────────────────────────────────────────────────────
+    // ── Applications (Phase 3: returns rich ApplicationDetailsDTO) ────────
 
     @GetMapping("/jobs/{jobId}/applications")
-    public ResponseEntity<Page<Application>> getApplications(
+    public ResponseEntity<Page<ApplicationDetailsDTO>> getApplications(
             @PathVariable Long jobId,
-            @PageableDefault(size = 20, sort = "skillMatchScore") Pageable pageable) {
-        return ResponseEntity.ok(applicationService.getJobApplications(jobId, pageable));
+            @PageableDefault(size = 20, sort = "skillMatchScore", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(applicationService.getJobApplicationsWithDetails(jobId, pageable));
     }
 
     @PatchMapping("/applications/{appId}/status")

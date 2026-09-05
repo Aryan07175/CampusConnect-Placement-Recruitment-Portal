@@ -19,10 +19,20 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     Page<Application> findByJobId(Long jobId, Pageable pageable);
     List<Application> findByJobIdAndStatus(Long jobId, ApplicationStatus status);
     long countByJobId(Long jobId);
+    long countByStatus(ApplicationStatus status);
 
     @Query("SELECT COUNT(a) FROM Application a WHERE a.status = 'PLACED'")
     long countPlaced();
 
     @Query("SELECT COUNT(a) FROM Application a WHERE a.status = 'OFFERED'")
     long countOffered();
+
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.status = 'SHORTLISTED'")
+    long countShortlisted();
+
+    @Query("SELECT AVG(a.skillMatchScore) FROM Application a WHERE a.skillMatchScore > 0")
+    Double avgSkillMatchScore();
+
+    @Query("SELECT COUNT(DISTINCT a.student.id) FROM Application a WHERE a.status IN ('OFFERED','PLACED')")
+    long countUniqueStudentsOfferedOrPlaced();
 }

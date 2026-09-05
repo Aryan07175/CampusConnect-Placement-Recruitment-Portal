@@ -9,6 +9,7 @@ import com.campusconnect.service.RecruiterProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,19 +30,43 @@ public class AdminController {
     private final JobPostingRepository jobPostingRepository;
     private final ApplicationRepository applicationRepository;
 
-    // ── Dashboard Stats ───────────────────────────────────────────────────
+    // ── Dashboard Stats (Phase 4: enhanced with rates) ────────────────────
 
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
+        long totalApplications = applicationRepository.count();
+        long placed            = applicationRepository.countPlaced();
+        long offered           = applicationRepository.countOffered();
+        long shortlisted       = applicationRepository.countShortlisted();
+        long totalJobs         = jobPostingRepository.count();
+        long activeJobs        = jobPostingRepository.countByStatus(
+                                     com.campusconnect.entity.JobPosting.JobStatus.ACTIVE);
+        Double avgMatch        = applicationRepository.avgSkillMatchScore();
+        long uniquePlaced      = applicationRepository.countUniqueStudentsOfferedOrPlaced();
+
+        // Placement rate = (placed / total applications) * 100
+        double placementRate = totalApplications > 0
+                ? Math.round((placed * 100.0 / totalApplications) * 10) / 10.0
+                : 0.0;
+
+        // Offer rate = (offered+placed / total applications) * 100
+        double offerRate = totalApplications > 0
+                ? Math.round(((offered + placed) * 100.0 / totalApplications) * 10) / 10.0
+                : 0.0;
+
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalUsers",       userRepository.count());
-        stats.put("totalJobs",        jobPostingRepository.count());
-        stats.put("activeJobs",       jobPostingRepository.countByStatus(
-                                          com.campusconnect.entity.JobPosting.JobStatus.ACTIVE));
-        stats.put("totalApplications",applicationRepository.count());
-        stats.put("totalPlaced",      applicationRepository.countPlaced());
-        stats.put("totalOffered",     applicationRepository.countOffered());
-        stats.put("pendingApprovals", recruiterProfileService.getPendingApprovals().size());
+        stats.put("totalUsers",        userRepository.count());
+        stats.put("totalJobs",         totalJobs);
+        stats.put("activeJobs",        activeJobs);
+        stats.put("totalApplications", totalApplications);
+        stats.put("totalPlaced",       placed);
+        stats.put("totalOffered",      offered);
+        stats.put("totalShortlisted",  shortlisted);
+        stats.put("avgSkillMatchScore", avgMatch != null ? Math.round(avgMatch) : 0);
+        stats.put("uniqueStudentsPlacedOrOffered", uniquePlaced);
+        stats.put("placementRate",     placementRate);
+        stats.put("offerRate",         offerRate);
+        stats.put("pendingApprovals",  recruiterProfileService.getPendingApprovals().size());
         return ResponseEntity.ok(stats);
     }
 
@@ -49,7 +74,7 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<Page<User>> getAllUsers(
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(userRepository.findAll(pageable));
     }
 

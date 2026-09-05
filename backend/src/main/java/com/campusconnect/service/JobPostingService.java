@@ -70,16 +70,31 @@ public class JobPostingService {
             throw new BadRequestException("You are not authorized to edit this job posting.");
         }
 
-        if (req.getTitle() != null)              job.setTitle(req.getTitle());
-        if (req.getDescription() != null)        job.setDescription(req.getDescription());
-        if (req.getRequiredSkills() != null)     job.setRequiredSkills(req.getRequiredSkills());
-        if (req.getJobType() != null)            job.setJobType(req.getJobType());
-        if (req.getLocation() != null)           job.setLocation(req.getLocation());
-        if (req.getRemote() != null)             job.setRemote(req.getRemote());
-        if (req.getSalaryRange() != null)        job.setSalaryRange(req.getSalaryRange());
+        if (req.getTitle() != null)               job.setTitle(req.getTitle());
+        if (req.getCompanyName() != null)         job.setCompanyName(req.getCompanyName());
+        if (req.getDescription() != null)         job.setDescription(req.getDescription());
+        if (req.getResponsibilities() != null)    job.setResponsibilities(req.getResponsibilities());
+        if (req.getRequirements() != null)        job.setRequirements(req.getRequirements());
+        if (req.getRequiredSkills() != null)      job.setRequiredSkills(req.getRequiredSkills());
+        if (req.getJobType() != null)             job.setJobType(req.getJobType());
+        if (req.getLocation() != null)            job.setLocation(req.getLocation());
+        if (req.getRemote() != null)              job.setRemote(req.getRemote());
+        if (req.getSalaryRange() != null)         job.setSalaryRange(req.getSalaryRange());
         if (req.getApplicationDeadline() != null) job.setApplicationDeadline(req.getApplicationDeadline());
-        if (req.getStatus() != null)             job.setStatus(req.getStatus());
+        if (req.getExperienceLevel() != null)     job.setExperienceLevel(req.getExperienceLevel());
+        if (req.getStatus() != null)              job.setStatus(req.getStatus());
 
+        return jobPostingRepository.save(job);
+    }
+
+    @Transactional
+    public JobPosting updateStatus(Long recruiterId, Long jobId, JobPosting.JobStatus status) {
+        JobPosting job = jobPostingRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("JobPosting", "id", jobId));
+        if (!job.getRecruiter().getId().equals(recruiterId)) {
+            throw new BadRequestException("You are not authorized to update this job posting.");
+        }
+        job.setStatus(status);
         return jobPostingRepository.save(job);
     }
 
