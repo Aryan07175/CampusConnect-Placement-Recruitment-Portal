@@ -1,5 +1,6 @@
 package com.campusconnect.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -19,10 +20,12 @@ public class Application {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
+    @JsonIgnoreProperties({"roles", "password", "hibernateLazyInitializer", "handler"})
     private User student;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id", nullable = false)
+    @JsonIgnoreProperties({"recruiter", "hibernateLazyInitializer", "handler"})
     private JobPosting job;
 
     @Enumerated(EnumType.STRING)
