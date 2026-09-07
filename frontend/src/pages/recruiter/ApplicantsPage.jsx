@@ -5,6 +5,7 @@ import StatusBadge from '../../components/shared/StatusBadge'
 import MatchScoreBadge from '../../components/shared/MatchScoreBadge'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
+import InterviewScheduleModal from '../../components/recruiter/InterviewScheduleModal'
 
 const STATUSES = ['APPLIED', 'UNDER_REVIEW', 'SHORTLISTED', 'OFFERED', 'REJECTED', 'PLACED']
 const STATUS_FILTERS = ['All', ...STATUSES]
@@ -20,6 +21,7 @@ export default function ApplicantsPage() {
   const [filter, setFilter]     = useState('All')
   const [expanded, setExpanded] = useState(null)   // expanded candidate id
   const [noteModal, setNoteModal] = useState(null) // { appId, notes }
+  const [interviewModal, setInterviewModal] = useState(null) // appId
 
   const load = useCallback(() => {
     setLoading(true)
@@ -107,10 +109,23 @@ export default function ApplicantsPage() {
               onToggle={() => setExpanded(e => e === app.applicationId ? null : app.applicationId)}
               onStatusChange={updateStatus}
               onNoteClick={() => setNoteModal({ appId: app.applicationId, notes: app.recruiterNotes ?? '' })}
+              onInterviewClick={() => setInterviewModal(app.applicationId)}
               updating={updating === app.applicationId}
             />
           ))}
         </div>
+      )}
+
+      {/* Interview Modal */}
+      {interviewModal && (
+        <InterviewScheduleModal
+          appId={interviewModal}
+          onClose={() => setInterviewModal(null)}
+          onSuccess={() => {
+            setInterviewModal(null)
+            load() // Reload apps to get updated status and interview details
+          }}
+        />
       )}
 
       {/* Notes modal */}
@@ -136,7 +151,7 @@ export default function ApplicantsPage() {
   )
 }
 
-function CandidateCard({ app, expanded, onToggle, onStatusChange, onNoteClick, updating }) {
+function CandidateCard({ app, expanded, onToggle, onStatusChange, onNoteClick, onInterviewClick, updating }) {
   const requiredSkills = []   // enriched from job context if needed
   const matchColor =
     (app.skillMatchScore ?? 0) >= 80 ? 'border-l-accent' :
@@ -205,6 +220,10 @@ function CandidateCard({ app, expanded, onToggle, onStatusChange, onNoteClick, u
 
         <button onClick={onNoteClick} className="btn-ghost text-xs">
           {app.recruiterNotes ? '📝 Edit Notes' : '+ Add Notes'}
+        </button>
+
+        <button onClick={onInterviewClick} className="btn-secondary text-xs">
+          📅 Schedule Interview
         </button>
 
         {app.hasResume && (

@@ -1,6 +1,8 @@
 package com.campusconnect.controller;
 
 import com.campusconnect.dto.ApplicationDetailsDTO;
+import com.campusconnect.dto.InterviewDTO;
+import com.campusconnect.dto.InterviewRequest;
 import com.campusconnect.dto.JobPostingRequest;
 import com.campusconnect.dto.RecruiterProfileRequest;
 import com.campusconnect.entity.Application;
@@ -9,6 +11,7 @@ import com.campusconnect.entity.JobPosting;
 import com.campusconnect.entity.RecruiterProfile;
 import com.campusconnect.security.UserDetailsImpl;
 import com.campusconnect.service.ApplicationService;
+import com.campusconnect.service.InterviewService;
 import com.campusconnect.service.JobPostingService;
 import com.campusconnect.service.RecruiterProfileService;
 import jakarta.validation.Valid;
@@ -22,6 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -33,6 +37,7 @@ public class RecruiterController {
     private final RecruiterProfileService profileService;
     private final JobPostingService jobPostingService;
     private final ApplicationService applicationService;
+    private final InterviewService interviewService;
 
     // ── Profile ───────────────────────────────────────────────────────────
 
@@ -105,5 +110,38 @@ public class RecruiterController {
         ApplicationStatus status = ApplicationStatus.valueOf(body.get("status"));
         String notes = body.get("notes");
         return ResponseEntity.ok(applicationService.updateStatus(appId, status, notes));
+    }
+
+    // ── Interviews (Phase 3) ─────────────────────────────────────────────
+
+    @PostMapping("/interviews")
+    public ResponseEntity<InterviewDTO> scheduleInterview(
+            @AuthenticationPrincipal UserDetailsImpl user,
+            @Valid @RequestBody InterviewRequest req) {
+        return ResponseEntity.ok(interviewService.schedule(user.getId(), req));
+    }
+
+    @PutMapping("/interviews/{interviewId}")
+    public ResponseEntity<InterviewDTO> updateInterview(
+            @AuthenticationPrincipal UserDetailsImpl user,
+            @PathVariable Long interviewId,
+            @RequestBody InterviewRequest req) {
+        return ResponseEntity.ok(interviewService.update(user.getId(), interviewId, req));
+    }
+
+    @PatchMapping("/interviews/{interviewId}/status")
+    public ResponseEntity<InterviewDTO> updateInterviewStatus(
+            @AuthenticationPrincipal UserDetailsImpl user,
+            @PathVariable Long interviewId,
+            @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(
+                interviewService.updateStatus(user.getId(), interviewId,
+                        body.get("status"), body.get("feedback")));
+    }
+
+    @GetMapping("/applications/{appId}/interviews")
+    public ResponseEntity<List<InterviewDTO>> getInterviewsByApplication(
+            @PathVariable Long appId) {
+        return ResponseEntity.ok(interviewService.getByApplication(appId));
     }
 }

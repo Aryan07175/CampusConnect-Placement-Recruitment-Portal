@@ -5,19 +5,29 @@ import { studentService } from '../../services/apiService'
 import StatusBadge from '../../components/shared/StatusBadge'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 
+const ROUND_LABELS = {
+  SCREENING: 'Screening', TECHNICAL_1: 'Technical Round 1',
+  TECHNICAL_2: 'Technical Round 2', HR: 'HR Round',
+  MANAGERIAL: 'Managerial Round', FINAL: 'Final Round',
+}
+const MODE_ICONS = { ONLINE: '💻', OFFLINE: '🏢', PHONE: '📞' }
+
 export default function StudentDashboard() {
   const { user } = useAuth()
-  const [profile, setProfile]   = useState(null)
-  const [apps, setApps]         = useState([])
-  const [loading, setLoading]   = useState(true)
+  const [profile, setProfile]       = useState(null)
+  const [apps, setApps]             = useState([])
+  const [interviews, setInterviews] = useState([])
+  const [loading, setLoading]       = useState(true)
 
   useEffect(() => {
     Promise.allSettled([
       studentService.getProfile(),
       studentService.getApplications({ size: 5, sort: 'appliedAt,desc' }),
-    ]).then(([prof, appsRes]) => {
-      if (prof.status === 'fulfilled') setProfile(prof.value.data)
+      studentService.getUpcomingInterviews(),
+    ]).then(([prof, appsRes, ivRes]) => {
+      if (prof.status === 'fulfilled')   setProfile(prof.value.data)
       if (appsRes.status === 'fulfilled') setApps(appsRes.value.data.content ?? [])
+      if (ivRes.status === 'fulfilled')  setInterviews(ivRes.value.data ?? [])
       setLoading(false)
     })
   }, [])
@@ -51,7 +61,7 @@ export default function StudentDashboard() {
           { label: 'Applications', value: apps.length, icon: '📄' },
           { label: 'Profile',      value: `${completionPct}%`, icon: '👤', sub: 'complete' },
           { label: 'Shortlisted',  value: apps.filter(a => a.status === 'SHORTLISTED').length, icon: '⭐' },
-          { label: 'Offers',       value: apps.filter(a => ['OFFERED','PLACED'].includes(a.status)).length, icon: '🎯' },
+          { label: 'Interviews',   value: interviews.length, icon: '📅' },
         ].map(({ label, value, icon, sub }) => (
           <div key={label} className="card text-center">
             <div className="text-2xl mb-1">{icon}</div>
@@ -75,6 +85,44 @@ export default function StudentDashboard() {
           <Link to="/student/profile" className="btn-secondary mt-3 text-xs inline-block">
             Update Profile
           </Link>
+        </div>
+      )}
+
+      {/* Upcoming Interviews (Phase 3) */}
+      {interviews.length > 0 && (
+        <div>
+          <h2 className="text-h3 font-semibold text-neutral-dark mb-4">📅 Upcoming Interviews</h2>
+          <div className="space-y-3">
+            {interviews.map(iv => (
+              <div key={iv.interviewId} className="card border-l-4 border-l-primary flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-semibold text-neutral-dark">{iv.jobTitle}</span>
+                    <span className="text-xs bg-primary-100 text-primary px-2 py-0.5 rounded-full font-medium">
+                      {ROUND_LABELS[iv.round] ?? iv.round}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">{iv.companyName}</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {MODE_ICONS[iv.mode]} {new Date(iv.scheduledAt).toLocaleString('en-IN', {
+                      weekday: 'short', day: 'numeric', month: 'short',
+                      hour: '2-digit', minute: '2-digit',
+                    })}
+                    {iv.durationMinutes ? ` · ${iv.durationMinutes} min` : ''}
+                  </p>
+                  {iv.meetingLink && (
+                    <a href={iv.meetingLink} target="_blank" rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline mt-1 inline-block">
+                      Join meeting →
+                    </a>
+                  )}
+                </div>
+                <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium shrink-0">
+                  SCHEDULED
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

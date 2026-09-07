@@ -1,11 +1,13 @@
 package com.campusconnect.controller;
 
+import com.campusconnect.dto.InterviewDTO;
 import com.campusconnect.dto.StudentProfileRequest;
 import com.campusconnect.entity.Application;
 import com.campusconnect.entity.JobPosting;
 import com.campusconnect.entity.StudentProfile;
 import com.campusconnect.security.UserDetailsImpl;
 import com.campusconnect.service.ApplicationService;
+import com.campusconnect.service.InterviewService;
 import com.campusconnect.service.JobPostingService;
 import com.campusconnect.service.StudentProfileService;
 import jakarta.validation.Valid;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -32,6 +35,7 @@ public class StudentController {
     private final StudentProfileService profileService;
     private final JobPostingService jobPostingService;
     private final ApplicationService applicationService;
+    private final InterviewService interviewService;
 
     // ── Profile ───────────────────────────────────────────────────────────
 
@@ -84,5 +88,13 @@ public class StudentController {
             @AuthenticationPrincipal UserDetailsImpl user,
             @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(applicationService.getStudentApplications(user.getId(), pageable));
+    }
+
+    // ── Interviews ───────────────────────────────────────────────
+
+    @GetMapping("/interviews")
+    public ResponseEntity<List<InterviewDTO>> myUpcomingInterviews(
+            @AuthenticationPrincipal UserDetailsImpl user) {
+        return ResponseEntity.ok(interviewService.getUpcomingForStudent(user.getId()));
     }
 }
