@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { studentService } from '../../services/apiService'
+import { studentService, recommendationService } from '../../services/apiService'
 import MatchScoreBadge from '../../components/shared/MatchScoreBadge'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
@@ -20,26 +20,35 @@ export default function JobListPage() {
   const fetchJobs = useCallback(async () => {
     setLoading(true)
     try {
-      const params = { page, size: PAGE_SIZE, sort: 'createdAt,desc' }
-      if (search) params.keyword = search
-      const { data } = await studentService.getJobs(params)
-      setJobs(data.content ?? [])
-      setTotal(data.totalElements ?? 0)
+      const { data } = await recommendationService.getMyRecommendations()
+      // Fallback search since recommendation API doesn't support query params yet
+      let results = data ?? []
+      if (search) {
+        const lowerSearch = search.toLowerCase()
+        results = results.filter(j => 
+          (j.title && j.title.toLowerCase().includes(lowerSearch)) || 
+          (j.companyName && j.companyName.toLowerCase().includes(lowerSearch)) ||
+          (j.requiredSkills && j.requiredSkills.toLowerCase().includes(lowerSearch))
+        )
+      }
+      setJobs(results)
+      setTotal(results.length)
     } catch { setJobs([]) }
     finally { setLoading(false) }
-  }, [search, page])
+  }, [search])
 
   useEffect(() => { fetchJobs() }, [fetchJobs])
 
   const handleSearch = (e) => { e.preventDefault(); setSearch(keyword); setPage(0) }
 
   const filtered = jobType === 'All' ? jobs : jobs.filter(j => j.jobType === jobType)
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   return (
     <div className="page-container space-y-6">
       <div>
         <h1 className="text-h2">Browse Jobs</h1>
-        <p className="text-sm text-slate-500 mt-1">{total} open position{total !== 1 ? 's' : ''} available</p>
+        <p className="text-sm text-slate-500 mt-1">{total} open position{total !== 1 ? 's' : ''} matched to your skills</p>
       </div>
 
       {/* Search + filter bar */}
@@ -77,8 +86,8 @@ export default function JobListPage() {
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(job => (
-            <JobCard key={job.id} job={job} />
+          {paginated.map(job => (
+            <JobCard key={job.jobId} job={job} />
           ))}
         </div>
       )}
@@ -101,9 +110,16 @@ function JobCard({ job }) {
   const skills = (job.requiredSkills ?? '').split(',').map(s => s.trim()).filter(Boolean)
 
   return (
-    <Link to={`/student/jobs/${job.id}`}
-      className="card hover:shadow-card-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col">
-      <div className="flex-1">
+    <Link to={`/student/jobs/${job.jobId}`}
+      className="card hover:shadow-card-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col relative overflow-hidden">
+      
+      {job.matchScore > 0 && (
+        <div className="absolute top-0 right-0">
+           <MatchScoreBadge score={job.matchScore} />
+        </div>
+      )}
+
+      <div className="flex-1 mt-2">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center shrink-0">
             <span className="text-primary font-bold text-sm">
