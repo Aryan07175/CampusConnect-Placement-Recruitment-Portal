@@ -4,6 +4,7 @@ import com.campusconnect.dto.StudentProfileRequest;
 import com.campusconnect.entity.StudentProfile;
 import com.campusconnect.entity.User;
 import com.campusconnect.exception.ResourceNotFoundException;
+import com.campusconnect.exception.BadRequestException;
 import com.campusconnect.repository.StudentProfileRepository;
 import com.campusconnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,19 @@ public class StudentProfileService {
     public StudentProfile uploadResume(Long userId, MultipartFile file) throws IOException {
         StudentProfile profile = profileRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", "userId", userId));
+
+        if (file.isEmpty()) {
+            throw new BadRequestException("File is empty");
+        }
+
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new BadRequestException("File size exceeds 5MB limit");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.equals("application/pdf")) {
+            throw new BadRequestException("Only PDF files are allowed");
+        }
 
         String uploadDir = "uploads/resumes";
         Path uploadPath = Paths.get(uploadDir);
