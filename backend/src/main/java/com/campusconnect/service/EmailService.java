@@ -23,4 +23,16 @@ public class EmailService {
         log.info("Body:\n{}", body);
         log.info("=====================================");
     }
+
+    public void sendRecruiterApprovalEmail(String toEmail, String recruiterName, String companyName) {
+        String subject = "Your Recruiter Account has been Approved!";
+        String body = String.format("Hi %s,\n\nGood news! Your recruiter profile for %s has been approved by the Admin.\nYou can now start posting jobs on CampusConnect.\n\nBest,\nCampusConnect Team",
+                recruiterName, companyName);
+        
+        log.info("========== MOCK EMAIL SENT ==========");
+        log.info("To: {}", toEmail);
+        log.info("Subject: {}", subject);
+        log.info("Body:\n{}", body);
+        log.info("=====================================");
+    }
 }

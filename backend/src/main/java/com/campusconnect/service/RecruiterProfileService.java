@@ -18,6 +18,7 @@ public class RecruiterProfileService {
 
     private final RecruiterProfileRepository profileRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @Transactional
     public RecruiterProfile upsertProfile(Long userId, RecruiterProfileRequest req) {
@@ -51,6 +52,18 @@ public class RecruiterProfileService {
         RecruiterProfile profile = profileRepository.findById(profileId)
                 .orElseThrow(() -> new ResourceNotFoundException("RecruiterProfile", "id", profileId));
         profile.setApproved(true);
-        return profileRepository.save(profile);
+        RecruiterProfile savedProfile = profileRepository.save(profile);
+
+        try {
+            emailService.sendRecruiterApprovalEmail(
+                    savedProfile.getUser().getEmail(),
+                    savedProfile.getUser().getFirstName(),
+                    savedProfile.getCompanyName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send recruiter approval email: " + e.getMessage());
+        }
+
+        return savedProfile;
     }
 }
