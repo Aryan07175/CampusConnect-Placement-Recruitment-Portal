@@ -47,7 +47,7 @@ public class StudentController {
     @PutMapping("/profile")
     public ResponseEntity<StudentProfile> upsertProfile(
             @AuthenticationPrincipal UserDetailsImpl user,
-            @RequestBody StudentProfileRequest req) {
+            @Valid @RequestBody StudentProfileRequest req) {
         return ResponseEntity.ok(profileService.upsertProfile(user.getId(), req));
     }
 

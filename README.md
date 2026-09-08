@@ -18,6 +18,33 @@ A full-stack campus placement portal connecting students, recruiters, and placem
 
 ---
 
+## Architecture
+
+```mermaid
+graph TD
+    Client[React Frontend] -->|REST / JSON| API[Spring Boot REST API]
+    API --> Security[Spring Security / JWT]
+    Security --> Controllers[Controllers]
+    Controllers --> Services[Business Services]
+    Services --> Repos[Spring Data JPA Repositories]
+    Repos --> DB[(MySQL Database)]
+    Services -.-> SkillMatch[Skill Match Engine]
+```
+
+## Entity-Relationship (ER) Diagram
+
+```mermaid
+erDiagram
+    USER ||--o| STUDENT_PROFILE : "has"
+    USER ||--o| RECRUITER_PROFILE : "has"
+    USER ||--o{ JOB_POSTING : "posts (if recruiter)"
+    STUDENT_PROFILE ||--o{ APPLICATION : "submits"
+    JOB_POSTING ||--o{ APPLICATION : "receives"
+    APPLICATION ||--o{ INTERVIEW : "has"
+```
+
+---
+
 ## Roles
 
 | Role | Description |
@@ -158,5 +185,5 @@ Scores are displayed as color-coded badges:
 - [x] Phase 3 — Recruiter Module (jobs CRUD, applicant management)
 - [x] Phase 4 — Admin Module (user management, recruiter approval, stats)
 - [x] Phase 5 — Skill-Match Engine
-- [ ] Phase 6 — Frontend UI (React + Tailwind)
+- [x] Phase 6 — Polish & Interview-Readiness
 - [ ] Phase 7 — Stretch Goals (Docker, CI/CD, Swagger)

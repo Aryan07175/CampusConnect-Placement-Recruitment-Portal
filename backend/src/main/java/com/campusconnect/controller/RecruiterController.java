@@ -49,7 +49,7 @@ public class RecruiterController {
     @PutMapping("/profile")
     public ResponseEntity<RecruiterProfile> upsertProfile(
             @AuthenticationPrincipal UserDetailsImpl user,
-            @RequestBody RecruiterProfileRequest req) {
+            @Valid @RequestBody RecruiterProfileRequest req) {
         return ResponseEntity.ok(profileService.upsertProfile(user.getId(), req));
     }
 
@@ -73,7 +73,7 @@ public class RecruiterController {
     public ResponseEntity<JobPosting> updateJob(
             @AuthenticationPrincipal UserDetailsImpl user,
             @PathVariable Long jobId,
-            @RequestBody JobPostingRequest req) {
+            @Valid @RequestBody JobPostingRequest req) {
         return ResponseEntity.ok(jobPostingService.update(user.getId(), jobId, req));
     }
 
@@ -125,7 +125,7 @@ public class RecruiterController {
     public ResponseEntity<InterviewDTO> updateInterview(
             @AuthenticationPrincipal UserDetailsImpl user,
             @PathVariable Long interviewId,
-            @RequestBody InterviewRequest req) {
+            @Valid @RequestBody InterviewRequest req) {
         return ResponseEntity.ok(interviewService.update(user.getId(), interviewId, req));
     }
 
