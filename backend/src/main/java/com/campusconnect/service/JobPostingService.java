@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,7 @@ public class JobPostingService {
     private final JobPostingRepository jobPostingRepository;
     private final UserRepository userRepository;
 
+    @Cacheable(value = "jobs", key = "(#keyword ?: '') + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<JobPosting> getActiveJobs(String keyword, Pageable pageable) {
         if (keyword != null && !keyword.isBlank()) {
             return jobPostingRepository.searchActive(keyword.trim(), pageable);
@@ -37,6 +40,7 @@ public class JobPostingService {
     }
 
     @Transactional
+    @CacheEvict(value = "jobs", allEntries = true)
     public JobPosting create(Long recruiterId, JobPostingRequest req) {
         User recruiter = userRepository.findById(recruiterId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", recruiterId));
@@ -62,6 +66,7 @@ public class JobPostingService {
     }
 
     @Transactional
+    @CacheEvict(value = "jobs", allEntries = true)
     public JobPosting update(Long recruiterId, Long jobId, JobPostingRequest req) {
         JobPosting job = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("JobPosting", "id", jobId));
@@ -88,6 +93,7 @@ public class JobPostingService {
     }
 
     @Transactional
+    @CacheEvict(value = "jobs", allEntries = true)
     public JobPosting updateStatus(Long recruiterId, Long jobId, JobPosting.JobStatus status) {
         JobPosting job = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("JobPosting", "id", jobId));
@@ -99,6 +105,7 @@ public class JobPostingService {
     }
 
     @Transactional
+    @CacheEvict(value = "jobs", allEntries = true)
     public void delete(Long recruiterId, Long jobId) {
         JobPosting job = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("JobPosting", "id", jobId));

@@ -186,4 +186,4 @@ Scores are displayed as color-coded badges:
 - [x] Phase 4 — Admin Module (user management, recruiter approval, stats)
 - [x] Phase 5 — Skill-Match Engine
 - [x] Phase 6 — Polish & Interview-Readiness
-- [ ] Phase 7 — Stretch Goals (Docker, CI/CD, Swagger)
+- [x] Phase 7 — Stretch Goals (Docker, CI/CD, Swagger, Redis, Email)

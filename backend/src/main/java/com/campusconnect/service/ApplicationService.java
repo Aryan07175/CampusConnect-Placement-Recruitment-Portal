@@ -32,6 +32,7 @@ public class ApplicationService {
     private final UserRepository userRepository;
     private final StudentProfileRepository studentProfileRepository;
     private final SkillMatchService skillMatchService;
+    private final EmailService emailService;
 
     @Transactional
     public Application apply(Long studentUserId, Long jobId, String coverLetter) {
@@ -137,7 +138,23 @@ public class ApplicationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Application", "id", applicationId));
         app.setStatus(status);
         if (notes != null) app.setRecruiterNotes(notes);
-        return applicationRepository.save(app);
+        
+        Application savedApp = applicationRepository.save(app);
+        
+        // Phase 7: Send Mock Email Notification
+        try {
+            emailService.sendApplicationStatusUpdateEmail(
+                savedApp.getStudent().getEmail(),
+                savedApp.getStudent().getFirstName(),
+                savedApp.getJob().getCompanyName(),
+                status.name()
+            );
+        } catch (Exception e) {
+            // Log but do not fail the transaction
+            System.err.println("Failed to send email notification: " + e.getMessage());
+        }
+        
+        return savedApp;
     }
 
     public Application getById(Long id) {
