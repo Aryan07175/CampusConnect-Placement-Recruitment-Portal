@@ -3,6 +3,7 @@ package com.campusconnect.dto;
 import com.campusconnect.entity.Interview.InterviewMode;
 import com.campusconnect.entity.Interview.InterviewRound;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -23,6 +24,7 @@ public class InterviewRequest {
     @Future(message = "Interview must be scheduled in the future")
     private LocalDateTime scheduledAt;
 
+    @Min(value = 1, message = "Duration must be at least 1 minute")
     private Integer durationMinutes = 60;
 
     private InterviewMode mode = InterviewMode.ONLINE;
