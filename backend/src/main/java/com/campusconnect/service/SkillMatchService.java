@@ -35,7 +35,7 @@ public class SkillMatchService {
         List<String> studentSkills = student.getSkillList();
         long matched = required.stream()
                 .filter(req -> studentSkills.stream()
-                        .anyMatch(s -> s.equalsIgnoreCase(req) || s.contains(req) || req.contains(s)))
+                        .anyMatch(s -> s.equalsIgnoreCase(req)))
                 .count();
 
         return (int) Math.round((double) matched / required.size() * 100);
