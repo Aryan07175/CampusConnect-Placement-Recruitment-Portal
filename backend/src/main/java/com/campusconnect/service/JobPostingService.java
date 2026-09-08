@@ -30,6 +30,10 @@ public class JobPostingService {
         return jobPostingRepository.findByStatus(JobPosting.JobStatus.ACTIVE, pageable);
     }
 
+    public Page<JobPosting> getPendingJobs(Pageable pageable) {
+        return jobPostingRepository.findByStatus(JobPosting.JobStatus.PENDING_APPROVAL, pageable);
+    }
+
     public JobPosting getById(Long id) {
         return jobPostingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("JobPosting", "id", id));
@@ -59,7 +63,7 @@ public class JobPostingService {
                 .salaryRange(req.getSalaryRange())
                 .applicationDeadline(req.getApplicationDeadline())
                 .experienceLevel(req.getExperienceLevel())
-                .status(req.getStatus() != null ? req.getStatus() : JobPosting.JobStatus.ACTIVE)
+                .status(req.getStatus() != null ? req.getStatus() : JobPosting.JobStatus.PENDING_APPROVAL)
                 .build();
 
         return jobPostingRepository.save(job);
@@ -101,6 +105,15 @@ public class JobPostingService {
             throw new BadRequestException("You are not authorized to update this job posting.");
         }
         job.setStatus(status);
+        return jobPostingRepository.save(job);
+    }
+
+    @Transactional
+    @CacheEvict(value = "jobs", allEntries = true)
+    public JobPosting approveJob(Long jobId) {
+        JobPosting job = jobPostingRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("JobPosting", "id", jobId));
+        job.setStatus(JobPosting.JobStatus.ACTIVE);
         return jobPostingRepository.save(job);
     }
 

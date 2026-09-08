@@ -3,8 +3,10 @@ package com.campusconnect.controller;
 import com.campusconnect.entity.RecruiterProfile;
 import com.campusconnect.entity.User;
 import com.campusconnect.repository.ApplicationRepository;
+import com.campusconnect.entity.JobPosting;
 import com.campusconnect.repository.JobPostingRepository;
 import com.campusconnect.repository.UserRepository;
+import com.campusconnect.service.JobPostingService;
 import com.campusconnect.service.RecruiterProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ public class AdminController {
     private final RecruiterProfileService recruiterProfileService;
     private final JobPostingRepository jobPostingRepository;
     private final ApplicationRepository applicationRepository;
+    private final JobPostingService jobPostingService;
 
     // ── Dashboard Stats (Phase 4: enhanced with rates) ────────────────────
 
@@ -107,5 +110,18 @@ public class AdminController {
     @PostMapping("/recruiters/{profileId}/approve")
     public ResponseEntity<RecruiterProfile> approveRecruiter(@PathVariable Long profileId) {
         return ResponseEntity.ok(recruiterProfileService.approve(profileId));
+    }
+
+    // ── Job Postings Approvals ────────────────────────────────────────────
+
+    @GetMapping("/jobs/pending")
+    public ResponseEntity<Page<JobPosting>> getPendingJobs(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(jobPostingService.getPendingJobs(pageable));
+    }
+
+    @PostMapping("/jobs/{jobId}/approve")
+    public ResponseEntity<JobPosting> approveJob(@PathVariable Long jobId) {
+        return ResponseEntity.ok(jobPostingService.approveJob(jobId));
     }
 }

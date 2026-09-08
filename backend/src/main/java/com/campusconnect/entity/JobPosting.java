@@ -60,7 +60,7 @@ public class JobPosting {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private JobStatus status = JobStatus.ACTIVE;
+    private JobStatus status = JobStatus.PENDING_APPROVAL;
 
     @Column(length = 100)
     private String experienceLevel;  // Fresher, 0-1yr, 1-3yr
@@ -73,7 +73,7 @@ public class JobPosting {
     private LocalDateTime updatedAt;
 
     public enum JobStatus {
-        ACTIVE, CLOSED, DRAFT
+        PENDING_APPROVAL, ACTIVE, CLOSED, DRAFT
     }
 
     /** Returns required skills as a normalized list for matching */
