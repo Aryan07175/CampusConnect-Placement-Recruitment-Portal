@@ -41,6 +41,10 @@ export default function JobListPage() {
 
   const handleSearch = (e) => { e.preventDefault(); setSearch(keyword); setPage(0) }
 
+  // BUG-24 FIX: reset page whenever the type filter changes so we don't
+  // end up on a page that doesn't exist for the filtered result set.
+  const handleJobTypeChange = (type) => { setJobType(type); setPage(0) }
+
   const filtered = jobType === 'All' ? jobs : jobs.filter(j => j.jobType === jobType)
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
@@ -64,7 +68,7 @@ export default function JobListPage() {
         </form>
         <div className="flex gap-1 overflow-x-auto pb-1">
           {JOB_TYPES.map(t => (
-            <button key={t} onClick={() => setJobType(t)}
+            <button key={t} onClick={() => handleJobTypeChange(t)}
               className={`px-3 py-1.5 rounded-btn text-xs font-medium whitespace-nowrap transition-colors ${
                 jobType === t
                   ? 'bg-primary text-white'
