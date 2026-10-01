@@ -53,12 +53,14 @@ public class AuthService {
                 .lastName(req.getLastName())
                 .build();
 
-        // Determine role
+        // Determine role — only STUDENT and RECRUITER are allowed via public registration.
+        // BUG-07 FIX: ADMIN was previously accepted here, allowing anyone to
+        // self-assign full admin privileges via POST /api/auth/register.
+        // Admin accounts are seeded at startup or created through a protected endpoint.
         Set<Role> roles = new HashSet<>();
         ERole eRole = switch (req.getRole().toUpperCase()) {
             case "RECRUITER" -> ERole.ROLE_RECRUITER;
-            case "ADMIN"     -> ERole.ROLE_ADMIN;
-            default          -> ERole.ROLE_STUDENT;
+            default          -> ERole.ROLE_STUDENT;   // ADMIN removed from public registration
         };
         Role role = roleRepository.findByName(eRole)
                 .orElseThrow(() -> new RuntimeException("Role not found: " + eRole));
