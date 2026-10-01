@@ -67,8 +67,13 @@ export default function RecruiterJobsPage() {
 
   const handleDelete = async (id, title) => {
     if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return
-    await recruiterService.deleteJob(id)
-    setJobs(j => j.filter(x => x.id !== id))
+    try {
+      await recruiterService.deleteJob(id)
+      // BUG-04 FIX: only remove from local state after confirmed API success
+      setJobs(j => j.filter(x => x.id !== id))
+    } catch (err) {
+      setError(err.response?.data?.message ?? 'Failed to delete job posting. Please try again.')
+    }
   }
 
   const toggleStatus = async (job) => {
