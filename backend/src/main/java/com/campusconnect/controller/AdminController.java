@@ -71,9 +71,9 @@ public class AdminController {
         stats.put("offerRate",         offerRate);
         stats.put("pendingApprovals",  recruiterProfileService.getPendingApprovals().size());
 
-        // Phase 5 requirements: Simulated package stats (since job salaries are free-text in MVP)
-        stats.put("averagePackage",    "12.5 LPA");
-        stats.put("highestPackage",    "32.0 LPA");
+        // BUG-23 FIX: removed hardcoded "12.5 LPA" / "32.0 LPA" fake package stats.
+        // salaryRange is a free-text field and cannot be reliably aggregated;
+        // showing fake numbers looks wrong in a live demo or under interview scrutiny.
 
         return ResponseEntity.ok(stats);
     }
