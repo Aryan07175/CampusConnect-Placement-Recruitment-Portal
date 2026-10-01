@@ -30,6 +30,11 @@ export const recruiterService = {
   getJobs:       (params) => api.get('/api/recruiter/jobs', { params }),
   createJob:     (data)   => api.post('/api/recruiter/jobs', data),
   updateJob:     (id, d)  => api.put(`/api/recruiter/jobs/${id}`, d),
+  // BUG-05 FIX: use the dedicated PATCH endpoint for status-only changes
+  // instead of PUT (full update) which can corrupt job data if the payload
+  // shape doesn't exactly match JobPostingRequest DTO.
+  toggleJobStatus: (id, status) =>
+    api.patch(`/api/recruiter/jobs/${id}/status`, { status }),
   deleteJob:     (id)     => api.delete(`/api/recruiter/jobs/${id}`),
   getApplications: (jobId, params) =>
     api.get(`/api/recruiter/jobs/${jobId}/applications`, { params }),

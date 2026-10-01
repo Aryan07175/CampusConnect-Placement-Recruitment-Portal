@@ -80,8 +80,14 @@ export default function RecruiterJobsPage() {
     setTogglingId(job.id)
     try {
       const newStatus = job.status === 'ACTIVE' ? 'CLOSED' : 'ACTIVE'
-      const { data } = await recruiterService.updateJob(job.id, { ...job, status: newStatus })
-      setJobs(j => j.map(x => x.id === job.id ? data : x))
+      // BUG-05 FIX: use the dedicated PATCH /status endpoint instead of
+      // PUT (full update) which can corrupt job data — the full JobPosting
+      // entity object has a nested recruiter field that doesn't match the
+      // JobPostingRequest DTO shape expected by the PUT endpoint.
+      await recruiterService.toggleJobStatus(job.id, newStatus)
+      setJobs(j => j.map(x => x.id === job.id ? { ...x, status: newStatus } : x))
+    } catch (err) {
+      setError(err.response?.data?.message ?? 'Failed to update job status.')
     } finally { setTogglingId(null) }
   }
 
