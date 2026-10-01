@@ -29,7 +29,10 @@ public class SkillMatchService {
 
     public int computeScore(StudentProfile student, JobPosting job) {
         List<String> required = job.getRequiredSkillList();
-        if (required.isEmpty()) return 0;
+        // BUG-19 FIX: if the job has no required skills it is open to everyone.
+        // Returning 0 was ambiguous — it showed as "No Match" in the UI badge.
+        // Return 100 to correctly signal "Everyone qualifies".
+        if (required.isEmpty()) return 100;
 
         List<String> studentSkills = student.getSkillList();
         long matched = required.stream()
