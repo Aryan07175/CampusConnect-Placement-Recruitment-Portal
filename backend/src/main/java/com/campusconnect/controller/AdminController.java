@@ -95,7 +95,16 @@ public class AdminController {
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal
+            com.campusconnect.security.UserDetailsImpl currentUser,
+            @PathVariable Long id) {
+        // BUG-20 FIX: prevent an admin from deleting their own account,
+        // which would lock everyone out of the admin panel.
+        if (currentUser.getId().equals(id)) {
+            throw new com.campusconnect.exception.BadRequestException(
+                    "You cannot delete your own admin account.");
+        }
         userRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
