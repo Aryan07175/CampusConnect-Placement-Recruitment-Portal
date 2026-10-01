@@ -133,12 +133,21 @@ public class ApplicationService {
     }
 
     @Transactional
-    public Application updateStatus(Long applicationId, ApplicationStatus status, String notes) {
+    public Application updateStatus(Long applicationId, Long recruiterId,
+                                    ApplicationStatus status, String notes) {
         if (status == null) {
             throw new BadRequestException("Application status must not be null.");
         }
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Application", "id", applicationId));
+
+        // BUG-06 FIX: verify the application belongs to a job owned by this recruiter
+        if (recruiterId != null
+                && !app.getJob().getRecruiter().getId().equals(recruiterId)) {
+            throw new BadRequestException(
+                    "You are not authorized to update the status of this application.");
+        }
+
         app.setStatus(status);
         if (notes != null) app.setRecruiterNotes(notes);
         

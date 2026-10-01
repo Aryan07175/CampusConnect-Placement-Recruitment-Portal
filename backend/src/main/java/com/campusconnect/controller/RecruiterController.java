@@ -105,11 +105,13 @@ public class RecruiterController {
 
     @PatchMapping("/applications/{appId}/status")
     public ResponseEntity<Application> updateStatus(
+            @AuthenticationPrincipal UserDetailsImpl user,
             @PathVariable Long appId,
             @RequestBody Map<String, String> body) {
         ApplicationStatus status = ApplicationStatus.valueOf(body.get("status"));
         String notes = body.get("notes");
-        return ResponseEntity.ok(applicationService.updateStatus(appId, status, notes));
+        // BUG-06 FIX: pass recruiterId so the service can verify ownership
+        return ResponseEntity.ok(applicationService.updateStatus(appId, user.getId(), status, notes));
     }
 
     // ── Interviews (Phase 3) ─────────────────────────────────────────────
