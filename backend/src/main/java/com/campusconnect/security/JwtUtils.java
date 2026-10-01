@@ -1,7 +1,7 @@
 package com.campusconnect.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
+import java.nio.charset.StandardCharsets;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +22,10 @@ public class JwtUtils {
     private int jwtExpirationMs;
 
     private SecretKey key() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(
-                java.util.Base64.getEncoder().encodeToString(jwtSecret.getBytes())));
+        // Use raw UTF-8 bytes of the secret string directly.
+        // Do NOT Base64-encode then decode — that is a no-op that breaks
+        // if the secret string is not valid Base64 (which it isn't here).
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateJwtToken(Authentication authentication) {
