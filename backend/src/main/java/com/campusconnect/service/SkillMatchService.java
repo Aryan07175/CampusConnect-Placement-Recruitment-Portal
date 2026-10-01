@@ -5,7 +5,6 @@ import com.campusconnect.entity.JobPosting;
 import com.campusconnect.entity.StudentProfile;
 import com.campusconnect.repository.JobPostingRepository;
 import com.campusconnect.repository.StudentProfileRepository;
-import com.campusconnect.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -58,8 +57,11 @@ public class SkillMatchService {
      * and returns them sorted by score descending.
      */
     public List<JobRecommendationDTO> getRecommendationsForStudent(Long studentUserId) {
+        // BUG-03 FIX: A new student who hasn't created a profile yet should still
+        // see all active jobs (with matchScore = 0) rather than getting a 404
+        // that causes the frontend to silently show "No jobs found".
         StudentProfile profile = studentProfileRepository.findByUserId(studentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", "userId", studentUserId));
+                .orElse(null);
 
         // Fetch up to 200 active jobs (sufficient for campus portal scale)
         List<JobPosting> activeJobs = jobPostingRepository
@@ -68,8 +70,9 @@ public class SkillMatchService {
 
         return activeJobs.stream()
                 .map(job -> {
-                    int score = computeScore(profile, job);
-                    return JobRecommendationDTO.from(job, score, scoreLabel(score));
+                    int score = (profile != null) ? computeScore(profile, job) : 0;
+                    String label = (profile != null) ? scoreLabel(score) : "Create your profile to see match";
+                    return JobRecommendationDTO.from(job, score, label);
                 })
                 .sorted(Comparator.comparingInt(JobRecommendationDTO::getMatchScore).reversed())
                 .collect(Collectors.toList());
