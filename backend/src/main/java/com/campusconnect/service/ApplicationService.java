@@ -134,6 +134,9 @@ public class ApplicationService {
 
     @Transactional
     public Application updateStatus(Long applicationId, ApplicationStatus status, String notes) {
+        if (status == null) {
+            throw new BadRequestException("Application status must not be null.");
+        }
         Application app = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Application", "id", applicationId));
         app.setStatus(status);

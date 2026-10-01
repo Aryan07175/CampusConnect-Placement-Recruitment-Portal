@@ -45,7 +45,11 @@ export default function ApplicantsPage() {
     if (!noteModal) return
     setUpdating(noteModal.appId)
     try {
-      await recruiterService.updateStatus(noteModal.appId, null, noteModal.notes)
+      // BUG-02 FIX: we must pass the current status — sending null causes
+      // ApplicationStatus.valueOf(null) to throw NPE on the backend (HTTP 500).
+      const currentApp = apps.find(a => a.applicationId === noteModal.appId)
+      const currentStatus = currentApp?.status ?? 'APPLIED'
+      await recruiterService.updateStatus(noteModal.appId, currentStatus, noteModal.notes)
       setApps(prev => prev.map(a => a.applicationId === noteModal.appId
         ? { ...a, recruiterNotes: noteModal.notes } : a))
       setNoteModal(null)
