@@ -46,8 +46,12 @@ public class StudentProfileService {
     }
 
     public StudentProfile getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        // BUG-J FIX: return an empty (unsaved) profile shell instead of 404 so the
+        // student dashboard and profile page degrade gracefully on first login.
         return profileRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", "userId", userId));
+                .orElseGet(() -> StudentProfile.builder().user(user).build());
     }
 
     @Transactional
