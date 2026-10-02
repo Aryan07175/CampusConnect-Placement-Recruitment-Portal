@@ -83,7 +83,7 @@ export default function ApplicantsPage() {
           <button key={s} onClick={() => setFilter(f => f === s ? 'All' : s)}
             className={`card text-center p-3 transition-all ${filter === s ? 'ring-2 ring-primary' : 'hover:shadow-card-md'}`}>
             <p className={`text-lg font-bold font-mono ${counts[s] > 0 ? 'text-primary' : 'text-slate-300'}`}>{counts[s]}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{s.replace('_', ' ')}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{s.replaceAll('_', ' ')}</p>
           </button>
         ))}
       </div>
@@ -95,7 +95,7 @@ export default function ApplicantsPage() {
             className={`px-3 py-1.5 rounded-btn text-xs font-medium whitespace-nowrap transition-colors ${
               filter === s ? 'bg-primary text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-primary/40'
             }`}>
-            {s === 'All' ? `All (${apps.length})` : `${s.replace('_', ' ')} (${counts[s]})`}
+            {s === 'All' ? `All (${apps.length})` : `${s.replaceAll('_', ' ')} (${counts[s]})`}
           </button>
         ))}
       </div>
@@ -219,7 +219,7 @@ function CandidateCard({ app, expanded, onToggle, onStatusChange, onNoteClick, o
           disabled={updating}
           onChange={e => onStatusChange(app.applicationId, e.target.value)}
         >
-          {STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+          {STATUSES.map(s => <option key={s} value={s}>{s.replaceAll('_', ' ')}</option>)}
         </select>
 
         <button onClick={onNoteClick} className="btn-ghost text-xs">
