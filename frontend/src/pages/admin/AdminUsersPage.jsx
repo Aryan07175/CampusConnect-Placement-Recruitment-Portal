@@ -67,11 +67,11 @@ export default function AdminUsersPage() {
           className="input flex-1"
           placeholder="Search by name, email, or username…"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); setPage(0) }}
         />
         <div className="flex gap-1">
           {ROLE_FILTERS.map(r => (
-            <button key={r} onClick={() => setRoleFilter(r)}
+            <button key={r} onClick={() => { setRoleFilter(r); setPage(0) }}
               className={`px-3 py-1.5 rounded-btn text-xs font-medium whitespace-nowrap transition-colors ${
                 roleFilter === r ? 'bg-primary text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-primary/40'
               }`}>{r}</button>
