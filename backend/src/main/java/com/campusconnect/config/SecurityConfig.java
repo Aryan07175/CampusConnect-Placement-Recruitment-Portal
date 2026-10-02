@@ -89,6 +89,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/recruiter/**").hasRole("RECRUITER")
                 // Admin-only
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // Recommendation endpoints — role enforcement via @PreAuthorize on controller methods
+                .requestMatchers("/api/recommendations/**").authenticated()
                 // Everything else requires authentication
                 .anyRequest().authenticated()
             )
