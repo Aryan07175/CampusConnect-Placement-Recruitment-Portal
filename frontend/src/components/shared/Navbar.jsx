@@ -55,7 +55,9 @@ export default function Navbar() {
                   key={link.to}
                   to={link.to}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    pathname === link.to || pathname.startsWith(link.to + '/')
+                    pathname === link.to
+                      ? 'bg-white/20 text-white'
+                      : pathname.startsWith(link.to + '/') && link.to.split('/').length > 2
                       ? 'bg-white/20 text-white'
                       : 'text-white/80 hover:text-white hover:bg-white/10'
                   }`}
