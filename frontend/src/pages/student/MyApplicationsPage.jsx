@@ -40,7 +40,7 @@ export default function MyApplicationsPage() {
       {/* Status filter */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {STATUS_FILTERS.map(s => (
-          <button key={s} onClick={() => setFilter(s)}
+          <button key={s} onClick={() => { setFilter(s); setPage(0) }}
             className={`px-3 py-1.5 rounded-btn text-xs font-medium whitespace-nowrap transition-colors ${
               filter === s
                 ? 'bg-primary text-white'
