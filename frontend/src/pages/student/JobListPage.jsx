@@ -46,6 +46,7 @@ export default function JobListPage() {
   const handleJobTypeChange = (type) => { setJobType(type); setPage(0) }
 
   const filtered = jobType === 'All' ? jobs : jobs.filter(j => j.jobType === jobType)
+  const filteredTotal = filtered.length
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   return (
@@ -97,12 +98,12 @@ export default function JobListPage() {
       )}
 
       {/* Pagination */}
-      {total > PAGE_SIZE && (
+      {filteredTotal > PAGE_SIZE && (
         <div className="flex items-center justify-center gap-2 pt-2">
           <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
             className="btn-secondary text-sm disabled:opacity-40">← Prev</button>
-          <span className="text-sm text-slate-500">Page {page + 1} of {Math.ceil(total / PAGE_SIZE)}</span>
-          <button onClick={() => setPage(p => p + 1)} disabled={(page + 1) * PAGE_SIZE >= total}
+          <span className="text-sm text-slate-500">Page {page + 1} of {Math.ceil(filteredTotal / PAGE_SIZE)}</span>
+          <button onClick={() => setPage(p => p + 1)} disabled={(page + 1) * PAGE_SIZE >= filteredTotal}
             className="btn-secondary text-sm disabled:opacity-40">Next →</button>
         </div>
       )}
