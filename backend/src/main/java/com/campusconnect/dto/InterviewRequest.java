@@ -2,7 +2,7 @@ package com.campusconnect.dto;
 
 import com.campusconnect.entity.Interview.InterviewMode;
 import com.campusconnect.entity.Interview.InterviewRound;
-import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -21,7 +21,7 @@ public class InterviewRequest {
     private InterviewRound round = InterviewRound.SCREENING;
 
     @NotNull(message = "Scheduled date/time is required")
-    @Future(message = "Interview must be scheduled in the future")
+    @FutureOrPresent(message = "Interview must be scheduled now or in the future")
     private LocalDateTime scheduledAt;
 
     @Min(value = 1, message = "Duration must be at least 1 minute")
