@@ -83,15 +83,15 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Package & Match stats */}
+      {/* Placement & Match stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="card text-center flex flex-col justify-center">
-            <p className="text-3xl font-bold font-mono text-accent">{s.highestPackage ?? 'N/A'}</p>
-            <p className="text-xs font-medium text-slate-500 mt-1">Highest Package</p>
+            <p className="text-3xl font-bold font-mono text-accent">{s.uniqueStudentsPlacedOrOffered ?? 0}</p>
+            <p className="text-xs font-medium text-slate-500 mt-1">Students Placed / Offered</p>
           </div>
           <div className="card text-center flex flex-col justify-center">
-            <p className="text-3xl font-bold font-mono text-primary">{s.averagePackage ?? 'N/A'}</p>
-            <p className="text-xs font-medium text-slate-500 mt-1">Average Package</p>
+            <p className="text-3xl font-bold font-mono text-primary">{s.offerRate ?? 0}%</p>
+            <p className="text-xs font-medium text-slate-500 mt-1">Offer Rate</p>
           </div>
           <div className="card text-center flex flex-col justify-center">
             <p className="text-3xl font-bold font-mono text-primary-light">{s.avgSkillMatchScore ?? 0}%</p>
