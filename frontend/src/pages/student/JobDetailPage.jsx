@@ -16,10 +16,22 @@ export default function JobDetailPage() {
   const [showForm, setShowForm] = useState(false)
 
   useEffect(() => {
-    studentService.getJob(id)
-      .then(r => setJob(r.data))
-      .catch(() => navigate('/student/jobs'))
-      .finally(() => setLoading(false))
+    Promise.allSettled([
+      studentService.getJob(id),
+      studentService.getApplications({ size: 100 }),
+    ]).then(([jobRes, appsRes]) => {
+      if (jobRes.status === 'fulfilled') {
+        setJob(jobRes.value.data)
+      } else {
+        navigate('/student/jobs')
+      }
+      if (appsRes.status === 'fulfilled') {
+        const apps = appsRes.value.data.content ?? []
+        const alreadyApplied = apps.some(a => String(a.job?.id) === String(id))
+        if (alreadyApplied) setApplied(true)
+      }
+      setLoading(false)
+    })
   }, [id, navigate])
 
   const handleApply = async () => {
