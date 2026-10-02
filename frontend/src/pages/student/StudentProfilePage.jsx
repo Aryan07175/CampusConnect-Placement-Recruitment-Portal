@@ -186,10 +186,10 @@ export default function StudentProfilePage() {
               <p className="text-sm font-medium text-neutral-dark">
                 {uploading ? 'Uploading…' : 'Click to upload your resume'}
               </p>
-              <p className="text-xs text-slate-400 mt-1">PDF or DOCX, max 10 MB</p>
+              <p className="text-xs text-slate-400 mt-1">PDF only, max 5 MB</p>
             </button>
           )}
-          <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleResume} />
+          <input ref={fileRef} type="file" accept=".pdf,application/pdf" className="hidden" onChange={handleResume} />
           {uploading && <p className="text-xs text-slate-500">Uploading resume…</p>}
         </div>
 
