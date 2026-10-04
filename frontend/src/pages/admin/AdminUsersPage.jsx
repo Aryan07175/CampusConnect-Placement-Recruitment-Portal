@@ -52,6 +52,9 @@ export default function AdminUsersPage() {
     return matchesRole && matchesSearch
   })
 
+  // BUG-08 FIX: Use filtered length for pagination if filters are active
+  const displayTotal = search || roleFilter !== 'All' ? filtered.length : total
+
   if (loading) return <LoadingSpinner text="Loading users…" />
 
   return (
@@ -151,12 +154,12 @@ export default function AdminUsersPage() {
       )}
 
       {/* Pagination */}
-      {total > PAGE_SIZE && (
+      {displayTotal > PAGE_SIZE && (
         <div className="flex items-center justify-center gap-2">
           <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
             className="btn-secondary text-sm disabled:opacity-40">← Prev</button>
-          <span className="text-sm text-slate-500">Page {page + 1} of {Math.ceil(total / PAGE_SIZE)}</span>
-          <button onClick={() => setPage(p => p + 1)} disabled={(page + 1) * PAGE_SIZE >= total}
+          <span className="text-sm text-slate-500">Page {page + 1} of {Math.ceil(displayTotal / PAGE_SIZE)}</span>
+          <button onClick={() => setPage(p => p + 1)} disabled={(page + 1) * PAGE_SIZE >= displayTotal}
             className="btn-secondary text-sm disabled:opacity-40">Next →</button>
         </div>
       )}
