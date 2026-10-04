@@ -7,7 +7,7 @@ import EmptyState from '../../components/shared/EmptyState'
 const EMPTY_JOB = {
   title: '', companyName: '', description: '', responsibilities: '', requirements: '',
   requiredSkills: '', jobType: 'Full-time', location: '', salaryRange: '',
-  applicationDeadline: '', experienceLevel: 'Fresher', remote: false, status: 'ACTIVE'
+  applicationDeadline: '', experienceLevel: 'Fresher', remote: false
 }
 
 export default function RecruiterJobsPage() {
@@ -39,7 +39,7 @@ export default function RecruiterJobsPage() {
       salaryRange: job.salaryRange ?? '',
       applicationDeadline: job.applicationDeadline ? job.applicationDeadline.split('T')[0] : '',
       experienceLevel: job.experienceLevel ?? 'Fresher',
-      remote: job.remote ?? false, status: job.status ?? 'ACTIVE'
+      remote: job.remote ?? false
     })
     setError('')
     setFormMode({ id: job.id })
@@ -138,9 +138,9 @@ export default function RecruiterJobsPage() {
             <div><label className="label">Experience Level</label>
               <select name="experienceLevel" className="input" value={form.experienceLevel} onChange={handleChange}>
                 {['Fresher','0–1 year','1–3 years','3+ years'].map(t => <option key={t}>{t}</option>)}</select></div>
-            <div><label className="label">Status</label>
-              <select name="status" className="input" value={form.status} onChange={handleChange}>
-                {['ACTIVE','CLOSED','DRAFT'].map(s => <option key={s}>{s}</option>)}</select></div>
+            {/* BUG-05 FIX: Status field removed — recruiters cannot self-approve to ACTIVE.
+                 New jobs default to PENDING_APPROVAL on the backend.
+                 Use the Close/Reopen toggle on existing jobs to change status. */}
             <div className="sm:col-span-2 flex items-center gap-2">
               <input type="checkbox" id="remote" name="remote" checked={form.remote} onChange={handleChange} className="w-4 h-4 text-primary rounded" />
               <label htmlFor="remote" className="text-sm text-neutral-dark">Remote / Hybrid available</label>
