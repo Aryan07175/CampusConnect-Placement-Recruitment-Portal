@@ -53,7 +53,7 @@ export default function JobListPage() {
     <div className="page-container space-y-6">
       <div>
         <h1 className="text-h2">Browse Jobs</h1>
-        <p className="text-sm text-slate-500 mt-1">{total} open position{total !== 1 ? 's' : ''} matched to your skills</p>
+        <p className="text-sm text-slate-500 mt-1">{filteredTotal} open position{filteredTotal !== 1 ? 's' : ''} matched to your skills</p>
       </div>
 
       {/* Search + filter bar */}
