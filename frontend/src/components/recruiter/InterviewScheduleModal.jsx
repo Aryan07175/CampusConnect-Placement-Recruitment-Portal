@@ -65,7 +65,7 @@ export default function InterviewScheduleModal({ appId, existingInterview, onClo
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Round</label>
               <select name="round" className="input" value={formData.round} onChange={handleChange}>
-                {ROUNDS.map(r => <option key={r} value={r}>{r.replace('_', ' ')}</option>)}
+                {ROUNDS.map(r => <option key={r} value={r}>{r.replaceAll('_', ' ')}</option>)}
               </select>
             </div>
             <div>
