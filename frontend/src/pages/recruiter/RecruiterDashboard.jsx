@@ -7,11 +7,20 @@ import LoadingSpinner from '../../components/shared/LoadingSpinner'
 export default function RecruiterDashboard() {
   const { user } = useAuth()
   const [jobs, setJobs]     = useState([])
+  const [companyName, setCompanyName] = useState('—')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    recruiterService.getJobs({ size: 5, sort: 'createdAt,desc' })
-      .then(r => setJobs(r.data.content ?? []))
+    Promise.all([
+      recruiterService.getJobs({ size: 5, sort: 'createdAt,desc' }),
+      recruiterService.getProfile()
+    ])
+      .then(([jobsRes, profileRes]) => {
+        setJobs(jobsRes.data.content ?? [])
+        if (profileRes.data?.companyName) {
+          setCompanyName(profileRes.data.companyName)
+        }
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
@@ -34,7 +43,7 @@ export default function RecruiterDashboard() {
         {[
           { label: 'Active Jobs', value: jobs.filter(j => j.status === 'ACTIVE').length, icon: '📋' },
           { label: 'Total Jobs',  value: jobs.length, icon: '📁' },
-          { label: 'Company',     value: '—',         icon: '🏢' },
+          { label: 'Company',     value: companyName, icon: '🏢' },
         ].map(({ label, value, icon }) => (
           <div key={label} className="card text-center">
             <div className="text-2xl mb-1">{icon}</div>
