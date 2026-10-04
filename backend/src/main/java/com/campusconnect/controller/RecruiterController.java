@@ -98,9 +98,11 @@ public class RecruiterController {
 
     @GetMapping("/jobs/{jobId}/applications")
     public ResponseEntity<Page<ApplicationDetailsDTO>> getApplications(
+            @AuthenticationPrincipal UserDetailsImpl user,
             @PathVariable Long jobId,
             @PageableDefault(size = 20, sort = "skillMatchScore", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(applicationService.getJobApplicationsWithDetails(jobId, pageable));
+        // BUG-03 FIX: pass recruiterId so the service enforces job ownership
+        return ResponseEntity.ok(applicationService.getJobApplicationsWithDetails(jobId, user.getId(), pageable));
     }
 
     @PatchMapping("/applications/{appId}/status")

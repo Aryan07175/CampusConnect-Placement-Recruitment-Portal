@@ -77,8 +77,18 @@ public class ApplicationService {
     /**
      * Phase 3: Rich applicant view for recruiters — includes full StudentProfile
      * data in each entry so no second request is needed.
+     *
+     * BUG-03 FIX: Added recruiterId parameter so the service can verify the job
+     * belongs to the requesting recruiter before returning applicant data.
      */
-    public Page<ApplicationDetailsDTO> getJobApplicationsWithDetails(Long jobId, Pageable pageable) {
+    public Page<ApplicationDetailsDTO> getJobApplicationsWithDetails(
+            Long jobId, Long recruiterId, Pageable pageable) {
+        JobPosting job = jobPostingRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("JobPosting", "id", jobId));
+        if (!job.getRecruiter().getId().equals(recruiterId)) {
+            throw new BadRequestException(
+                    "You are not authorized to view applicants for this job.");
+        }
         Page<Application> apps = applicationRepository.findByJobId(jobId, pageable);
         List<ApplicationDetailsDTO> dtos = apps.getContent().stream()
                 .map(this::toDetailsDTO)
