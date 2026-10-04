@@ -37,7 +37,9 @@ export default function InterviewScheduleModal({ appId, existingInterview, onClo
       const payload = {
         ...formData,
         applicationId: appId,
-        scheduledAt: new Date(formData.scheduledAt).toISOString()
+        // BUG-07 FIX: toISOString() appends 'Z' (UTC offset) which Spring's
+        // LocalDateTime deserializer rejects. Slice it off to get a plain datetime string.
+        scheduledAt: new Date(formData.scheduledAt).toISOString().slice(0, -1)
       }
       
       if (existingInterview) {
