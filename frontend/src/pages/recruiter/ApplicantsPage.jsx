@@ -156,7 +156,7 @@ export default function ApplicantsPage() {
 }
 
 function CandidateCard({ app, expanded, onToggle, onStatusChange, onNoteClick, onInterviewClick, updating }) {
-  const requiredSkills = []   // enriched from job context if needed
+  const _requiredSkills = []   // enriched from job context if needed
   const matchColor =
     (app.skillMatchScore ?? 0) >= 80 ? 'border-l-accent' :
     (app.skillMatchScore ?? 0) >= 50 ? 'border-l-warning' :

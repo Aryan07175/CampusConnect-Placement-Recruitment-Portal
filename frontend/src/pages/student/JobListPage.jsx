@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { studentService, recommendationService } from '../../services/apiService'
+import { recommendationService } from '../../services/apiService'
 import MatchScoreBadge from '../../components/shared/MatchScoreBadge'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
@@ -9,7 +9,6 @@ const JOB_TYPES = ['All', 'Full-time', 'Internship', 'Part-time', 'Contract']
 
 export default function JobListPage() {
   const [jobs, setJobs]       = useState([])
-  const [total, setTotal]     = useState(0)
   const [loading, setLoading] = useState(true)
   const [keyword, setKeyword] = useState('')
   const [search, setSearch]   = useState('')
@@ -32,7 +31,6 @@ export default function JobListPage() {
         )
       }
       setJobs(results)
-      setTotal(results.length)
     } catch { setJobs([]) }
     finally { setLoading(false) }
   }, [search])

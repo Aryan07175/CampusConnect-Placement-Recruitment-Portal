@@ -16,7 +16,7 @@ export default function AdminRecruitersPage() {
 
   useEffect(() => { load() }, [])
 
-  const approve = async (id, company) => {
+  const approve = async (id, _company) => {
     setApproving(id)
     try {
       await adminService.approveRecruiter(id)

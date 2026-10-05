@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { studentService } from '../../services/apiService'
-import MatchScoreBadge from '../../components/shared/MatchScoreBadge'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 
 export default function JobDetailPage() {
