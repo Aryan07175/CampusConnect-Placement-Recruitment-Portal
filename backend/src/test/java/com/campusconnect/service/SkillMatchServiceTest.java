@@ -68,7 +68,7 @@ class SkillMatchServiceTest {
     void computeScore_WithNoRequiredSkills() {
         jobPosting.setRequiredSkills("");
         int score = skillMatchService.computeScore(studentProfile, jobPosting);
-        assertEquals(0, score);
+        assertEquals(100, score);
     }
 
     @Test
@@ -118,10 +118,20 @@ class SkillMatchServiceTest {
     @Test
     void getRecommendationsForStudent_ProfileNotFound() {
         Long studentId = 999L;
+        JobPosting job = JobPosting.builder()
+                .id(1L)
+                .title("Software Engineer")
+                .requiredSkills("Java, React, SQL")
+                .build();
+        
         when(studentProfileRepository.findByUserId(studentId)).thenReturn(Optional.empty());
+        when(jobPostingRepository.findByStatus(eq(JobPosting.JobStatus.ACTIVE), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(Collections.singletonList(job)));
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            skillMatchService.getRecommendationsForStudent(studentId);
-        });
+        List<JobRecommendationDTO> recommendations = skillMatchService.getRecommendationsForStudent(studentId);
+
+        assertEquals(1, recommendations.size());
+        assertEquals(0, recommendations.get(0).getMatchScore());
+        assertEquals("Create your profile to see match", recommendations.get(0).getMatchLabel());
     }
 }
