@@ -20,14 +20,23 @@ export default function RecruiterJobsPage() {
   const [togglingId, setTogglingId] = useState(null)
 
   const load = useCallback(() => {
-    setLoading(true)
-    recruiterService.getJobs({ size: 100, sort: 'createdAt,desc' })
-      .then(r => setJobs(r.data.content ?? []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    return recruiterService.getJobs({ size: 100, sort: 'createdAt,desc' })
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    let ignore = false
+    load()
+      .then(r => {
+        if (!ignore) {
+          setJobs(r.data.content ?? [])
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => { ignore = true }
+  }, [load])
 
   const openCreate = () => { setForm(EMPTY_JOB); setError(''); setFormMode('create') }
   const openEdit   = (job) => {
