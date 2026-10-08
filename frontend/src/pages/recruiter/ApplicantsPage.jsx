@@ -24,14 +24,24 @@ export default function ApplicantsPage() {
   const [interviewModal, setInterviewModal] = useState(null) // appId
 
   const load = useCallback(() => {
-    setLoading(true)
-    recruiterService.getApplications(jobId, { size: 50, sort: 'skillMatchScore,desc' })
-      .then(r => { setApps(r.data.content ?? []); setTotal(r.data.totalElements ?? 0) })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    return recruiterService.getApplications(jobId, { size: 50, sort: 'skillMatchScore,desc' })
   }, [jobId])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    let ignore = false
+    load()
+      .then(r => {
+        if (!ignore) {
+          setApps(r.data.content ?? [])
+          setTotal(r.data.totalElements ?? 0)
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => { ignore = true }
+  }, [load])
 
   const updateStatus = async (appId, status) => {
     setUpdating(appId)
