@@ -16,26 +16,36 @@ export default function JobListPage() {
   const [page, setPage]       = useState(0)
   const PAGE_SIZE = 12
 
-  const fetchJobs = useCallback(async () => {
-    setLoading(true)
-    try {
-      const { data } = await recommendationService.getMyRecommendations()
-      // Fallback search since recommendation API doesn't support query params yet
-      let results = data ?? []
-      if (search) {
-        const lowerSearch = search.toLowerCase()
-        results = results.filter(j => 
-          (j.title && j.title.toLowerCase().includes(lowerSearch)) || 
-          (j.companyName && j.companyName.toLowerCase().includes(lowerSearch)) ||
-          (j.requiredSkills && j.requiredSkills.toLowerCase().includes(lowerSearch))
-        )
-      }
-      setJobs(results)
-    } catch { setJobs([]) }
-    finally { setLoading(false) }
-  }, [search])
+  const fetchJobs = useCallback(() => {
+    return recommendationService.getMyRecommendations()
+  }, [])
 
-  useEffect(() => { fetchJobs() }, [fetchJobs])
+  useEffect(() => {
+    let ignore = false
+    fetchJobs()
+      .then(({ data }) => {
+        if (!ignore) {
+          let results = data ?? []
+          if (search) {
+            const lowerSearch = search.toLowerCase()
+            results = results.filter(j => 
+              (j.title && j.title.toLowerCase().includes(lowerSearch)) || 
+              (j.companyName && j.companyName.toLowerCase().includes(lowerSearch)) ||
+              (j.requiredSkills && j.requiredSkills.toLowerCase().includes(lowerSearch))
+            )
+          }
+          setJobs(results)
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setJobs([])
+          setLoading(false)
+        }
+      })
+    return () => { ignore = true }
+  }, [fetchJobs, search])
 
   const handleSearch = (e) => { e.preventDefault(); setSearch(keyword); setPage(0) }
 
