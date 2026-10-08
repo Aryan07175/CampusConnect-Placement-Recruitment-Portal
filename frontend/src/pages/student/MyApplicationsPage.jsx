@@ -16,17 +16,28 @@ export default function MyApplicationsPage() {
   const [page, setPage]       = useState(0)
   const PAGE_SIZE = 10
 
-  const fetchApps = useCallback(async () => {
-    setLoading(true)
-    try {
-      const { data } = await studentService.getApplications({ page, size: PAGE_SIZE, sort: 'appliedAt,desc' })
-      setApps(data.content ?? [])
-      setTotal(data.totalElements ?? 0)
-    } catch { setApps([]) }
-    finally { setLoading(false) }
+  const fetchApps = useCallback(() => {
+    return studentService.getApplications({ page, size: PAGE_SIZE, sort: 'appliedAt,desc' })
   }, [page])
 
-  useEffect(() => { fetchApps() }, [fetchApps])
+  useEffect(() => {
+    let ignore = false
+    fetchApps()
+      .then(({ data }) => {
+        if (!ignore) {
+          setApps(data.content ?? [])
+          setTotal(data.totalElements ?? 0)
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setApps([])
+          setLoading(false)
+        }
+      })
+    return () => { ignore = true }
+  }, [fetchApps])
 
   const filtered = filter === 'All' ? apps : apps.filter(a => a.status === filter)
 
