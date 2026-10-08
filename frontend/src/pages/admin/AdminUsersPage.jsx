@@ -17,13 +17,24 @@ export default function AdminUsersPage() {
   const PAGE_SIZE = 20
 
   const load = useCallback(() => {
-    setLoading(true)
-    adminService.getUsers({ page, size: PAGE_SIZE, sort: 'createdAt,desc' })
-      .then(r => { setUsers(r.data.content ?? []); setTotal(r.data.totalElements ?? 0) })
-      .finally(() => setLoading(false))
+    return adminService.getUsers({ page, size: PAGE_SIZE, sort: 'createdAt,desc' })
   }, [page])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    let ignore = false
+    load()
+      .then(r => {
+        if (!ignore) {
+          setUsers(r.data.content ?? [])
+          setTotal(r.data.totalElements ?? 0)
+          setLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => { ignore = true }
+  }, [load])
 
   const toggle = async (id) => {
     setToggling(id)
