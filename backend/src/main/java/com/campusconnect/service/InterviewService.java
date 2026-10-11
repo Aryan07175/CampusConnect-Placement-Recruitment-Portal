@@ -101,8 +101,17 @@ public class InterviewService {
 
     /**
      * Get all interviews for a specific application (recruiter view).
+     * BUG-D FIX: added recruiterId parameter so the service verifies job ownership
+     * before returning interview data. Any recruiter could previously read
+     * another recruiter's candidate interviews via /recruiter/applications/{appId}/interviews.
      */
-    public List<InterviewDTO> getByApplication(Long applicationId) {
+    public List<InterviewDTO> getByApplication(Long applicationId, Long recruiterId) {
+        // Reuse the same auth helper used by update/updateStatus
+        Application app = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Application", "id", applicationId));
+        if (!app.getJob().getRecruiter().getId().equals(recruiterId)) {
+            throw new BadRequestException("You are not authorized to view interviews for this application.");
+        }
         return interviewRepository.findByApplicationIdOrderByScheduledAt(applicationId)
                 .stream().map(InterviewDTO::from).collect(Collectors.toList());
     }

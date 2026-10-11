@@ -145,7 +145,9 @@ public class RecruiterController {
 
     @GetMapping("/applications/{appId}/interviews")
     public ResponseEntity<List<InterviewDTO>> getInterviewsByApplication(
+            @AuthenticationPrincipal UserDetailsImpl user,
             @PathVariable Long appId) {
-        return ResponseEntity.ok(interviewService.getByApplication(appId));
+        // BUG-D FIX: pass recruiterId so the service enforces job ownership
+        return ResponseEntity.ok(interviewService.getByApplication(appId, user.getId()));
     }
 }
