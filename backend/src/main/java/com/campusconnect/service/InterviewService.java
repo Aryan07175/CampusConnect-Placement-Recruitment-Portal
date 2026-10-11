@@ -81,8 +81,20 @@ public class InterviewService {
      */
     @Transactional
     public InterviewDTO updateStatus(Long recruiterId, Long interviewId, String status, String feedback) {
+        // BUG-B FIX: valueOf(null) or valueOf("INVALID") throws IllegalArgumentException → HTTP 500.
+        // Validate the status value first and return a descriptive 400 instead.
+        if (status == null || status.isBlank()) {
+            throw new BadRequestException("Interview status must not be null or empty.");
+        }
+        InterviewStatus interviewStatus;
+        try {
+            interviewStatus = InterviewStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid interview status: '" + status + "'. " +
+                    "Allowed values: SCHEDULED, COMPLETED, CANCELLED, RESCHEDULED.");
+        }
         Interview interview = findAndAuthorize(interviewId, recruiterId);
-        interview.setStatus(InterviewStatus.valueOf(status));
+        interview.setStatus(interviewStatus);
         if (feedback != null) interview.setFeedback(feedback);
         return InterviewDTO.from(interviewRepository.save(interview));
     }
