@@ -56,8 +56,13 @@ public class StudentProfileService {
 
     @Transactional
     public StudentProfile uploadResume(Long userId, MultipartFile file) throws IOException {
+        // BUG-F FIX: previously threw 404 if no profile existed, forcing students to
+        // fill out and save their profile first before uploading a resume.
+        // Auto-create an empty profile shell (same pattern as upsertProfile).
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
         StudentProfile profile = profileRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", "userId", userId));
+                .orElseGet(() -> StudentProfile.builder().user(user).build());
 
         if (file.isEmpty()) {
             throw new BadRequestException("File is empty");
