@@ -48,7 +48,9 @@ export default function AdminDashboard() {
     { name: 'Placement Rate', value: s.placementRate ?? 0 },
     { name: 'Offer Rate', value: s.offerRate ?? 0 },
     { name: 'Shortlist Rate', value: s.totalApplications > 0 ? Math.round((s.totalShortlisted / s.totalApplications) * 100) : 0 },
-    { name: 'Other', value: 100 - Math.max(s.placementRate ?? 0, s.offerRate ?? 0) }
+    // BUG-G FIX: "Other" could go negative when placementRate + offerRate > 100,
+    // causing Recharts to crash. Clamp to 0.
+    { name: 'Other', value: Math.max(0, 100 - Math.max(s.placementRate ?? 0, s.offerRate ?? 0)) }
   ]
 
   return (
