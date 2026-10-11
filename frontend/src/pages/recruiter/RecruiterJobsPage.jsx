@@ -68,7 +68,10 @@ export default function RecruiterJobsPage() {
       } else {
         await recruiterService.updateJob(formMode.id, form)
       }
-      closeForm(); load()
+      // BUG-C FIX: was calling load() without await — the form closed before
+      // the list refreshed, so newly created/edited jobs appeared missing.
+      await load().then(r => setJobs(r.data.content ?? []))
+      closeForm()
     } catch (err) {
       setError(err.response?.data?.message ?? 'Failed to save job posting.')
     } finally { setSaving(false) }
