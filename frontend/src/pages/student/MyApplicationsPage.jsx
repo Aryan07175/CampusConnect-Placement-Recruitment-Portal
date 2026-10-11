@@ -57,7 +57,8 @@ export default function MyApplicationsPage() {
                 ? 'bg-primary text-white'
                 : 'bg-white text-slate-600 border border-slate-200 hover:border-primary/40'
             }`}>
-            {s === 'All' ? 'All' : s.replace('_', ' ')}
+            {/* BUG-H FIX: .replace('_',' ') only fixes the first underscore; use replaceAll */}
+            {s === 'All' ? 'All' : s.replaceAll('_', ' ')}
           </button>
         ))}
       </div>
@@ -66,7 +67,7 @@ export default function MyApplicationsPage() {
        filtered.length === 0 ? (
         <EmptyState
           icon="📋"
-          title={filter === 'All' ? "No applications yet" : `No ${filter.replace('_', ' ').toLowerCase()} applications`}
+          title={filter === 'All' ? "No applications yet" : `No ${filter.replaceAll('_', ' ').toLowerCase()} applications`}
           description={filter === 'All' ? "You haven't applied to any jobs yet. Explore open roles to get started." : "No applications match this filter."}
           action={filter === 'All' && <Link to="/student/jobs" className="btn-primary text-sm">Browse open jobs</Link>}
         />
