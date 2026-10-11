@@ -17,6 +17,7 @@ public class UserDetailsImpl implements UserDetails {
     private final String email;
     private final String firstName;
     private final String lastName;
+    private final boolean enabled;
 
     @JsonIgnore
     private final String password;
@@ -25,7 +26,7 @@ public class UserDetailsImpl implements UserDetails {
 
     public UserDetailsImpl(Long id, String username, String email,
                            String firstName, String lastName,
-                           String password,
+                           String password, boolean enabled,
                            Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
@@ -33,6 +34,7 @@ public class UserDetailsImpl implements UserDetails {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
+        this.enabled = enabled;
         this.authorities = authorities;
     }
 
@@ -48,6 +50,7 @@ public class UserDetailsImpl implements UserDetails {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPassword(),
+                user.isEnabled(),    // BUG-A FIX: propagate the actual enabled flag
                 authorities
         );
     }
@@ -65,5 +68,6 @@ public class UserDetailsImpl implements UserDetails {
     @Override public boolean isAccountNonExpired()     { return true; }
     @Override public boolean isAccountNonLocked()      { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled()               { return true; }
+    // BUG-A FIX: was hardcoded to true — disabled accounts could still authenticate.
+    @Override public boolean isEnabled()               { return enabled; }
 }
