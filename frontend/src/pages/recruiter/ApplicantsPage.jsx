@@ -137,7 +137,12 @@ export default function ApplicantsPage() {
           onClose={() => setInterviewModal(null)}
           onSuccess={() => {
             setInterviewModal(null)
-            load() // Reload apps to get updated status and interview details
+            // BUG-6 FIX: was calling load() without consuming the result — the
+            // applicant list was never refreshed after scheduling an interview.
+            load().then(r => {
+              setApps(r.data.content ?? [])
+              setTotal(r.data.totalElements ?? 0)
+            }).catch(() => {})
           }}
         />
       )}
