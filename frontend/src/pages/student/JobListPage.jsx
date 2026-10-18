@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { recommendationService } from '../../services/apiService'
+import { studentService, recommendationService } from '../../services/apiService'
 import MatchScoreBadge from '../../components/shared/MatchScoreBadge'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
@@ -16,31 +16,54 @@ export default function JobListPage() {
   const [page, setPage]       = useState(0)
   const PAGE_SIZE = 12
 
+  // BUG-1 FIX: previously only called getMyRecommendations(), which returns []
+  // for students without a profile, making the entire job board empty.
+  // Now we fetch ALL active jobs first, then overlay match scores from the
+  // recommendation service (which may return [] if no profile exists — that's OK).
   const fetchJobs = useCallback(() => {
-    return recommendationService.getMyRecommendations()
+    return Promise.allSettled([
+      studentService.getJobs({ size: 200, sort: 'createdAt,desc' }),
+      recommendationService.getMyRecommendations(),
+    ])
   }, [])
 
   useEffect(() => {
     let ignore = false
     fetchJobs()
-      .then(({ data }) => {
+      .then(([jobsRes, recsRes]) => {
         if (!ignore) {
-          let results = data ?? []
+          // Build a map of jobId -> matchScore from recommendations
+          const scoreMap = {}
+          if (recsRes.status === 'fulfilled') {
+            ;(recsRes.value.data ?? []).forEach(r => {
+              scoreMap[r.jobId] = { matchScore: r.matchScore, matchLabel: r.matchLabel }
+            })
+          }
+
+          // Use recommendation results if available (they already include all active jobs
+          // plus match scores). Fall back to plain job list if recs failed.
+          let results = []
+          if (recsRes.status === 'fulfilled' && recsRes.value.data?.length > 0) {
+            results = recsRes.value.data ?? []
+          } else if (jobsRes.status === 'fulfilled') {
+            // Merge plain jobs with any partial score data we have
+            results = (jobsRes.value.data?.content ?? []).map(j => ({
+              ...j,
+              jobId: j.id,
+              matchScore: scoreMap[j.id]?.matchScore ?? 0,
+              matchLabel: scoreMap[j.id]?.matchLabel ?? '',
+            }))
+          }
+
           if (search) {
             const lowerSearch = search.toLowerCase()
-            results = results.filter(j => 
-              (j.title && j.title.toLowerCase().includes(lowerSearch)) || 
+            results = results.filter(j =>
+              (j.title && j.title.toLowerCase().includes(lowerSearch)) ||
               (j.companyName && j.companyName.toLowerCase().includes(lowerSearch)) ||
               (j.requiredSkills && j.requiredSkills.toLowerCase().includes(lowerSearch))
             )
           }
           setJobs(results)
-          setLoading(false)
-        }
-      })
-      .catch(() => {
-        if (!ignore) {
-          setJobs([])
           setLoading(false)
         }
       })
