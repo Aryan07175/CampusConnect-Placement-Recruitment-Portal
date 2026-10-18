@@ -36,7 +36,11 @@ export default function StudentDashboard() {
 
   const completionPct = profile ? [
     profile.college, profile.degree, profile.branch,
-    profile.skills, profile.resumePath
+    profile.skills,
+    // BUG-8 FIX: was checking profile.resumePath which is the server-side
+    // filesystem path — not included in the API response. Check resumeOriginalName
+    // which IS included and indicates a resume was uploaded.
+    profile.resumeOriginalName
   ].filter(Boolean).length * 20 : 0
 
   return (
