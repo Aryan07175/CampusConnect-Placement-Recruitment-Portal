@@ -11,17 +11,19 @@ export default function RecruiterDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
+    // BUG-3 FIX: was Promise.all — crashes the entire dashboard if getProfile()
+    // fails (e.g. recruiter has not yet created a profile). Use allSettled so
+    // jobs still load even when the profile fetch returns 404.
+    Promise.allSettled([
       recruiterService.getJobs({ size: 5, sort: 'createdAt,desc' }),
       recruiterService.getProfile()
     ])
       .then(([jobsRes, profileRes]) => {
-        setJobs(jobsRes.data.content ?? [])
-        if (profileRes.data?.companyName) {
-          setCompanyName(profileRes.data.companyName)
+        if (jobsRes.status === 'fulfilled')   setJobs(jobsRes.value.data.content ?? [])
+        if (profileRes.status === 'fulfilled' && profileRes.value.data?.companyName) {
+          setCompanyName(profileRes.value.data.companyName)
         }
       })
-      .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
