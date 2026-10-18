@@ -19,11 +19,10 @@ export default function InterviewScheduleModal({ appId, existingInterview, onClo
   })
 
   const handleChange = (e) => {
-    // BUG-27 FIX: e.target.value is always a string. For number inputs (e.g.
-    // durationMinutes) we must parse to int so the backend receives the correct
-    // type and @Min(1) bean validation works as expected.
+    // BUG-9 FIX: parseInt('', 10) returns NaN when the user clears a number
+    // input — guard with || fallback so backend never receives NaN.
     const value = e.target.type === 'number'
-      ? parseInt(e.target.value, 10)
+      ? (parseInt(e.target.value, 10) || 0)
       : e.target.value
     setFormData(prev => ({ ...prev, [e.target.name]: value }))
   }
