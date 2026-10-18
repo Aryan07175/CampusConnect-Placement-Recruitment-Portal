@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { adminService } from '../../services/apiService'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
@@ -8,13 +8,16 @@ export default function AdminRecruitersPage() {
   const [loading, setLoading] = useState(true)
   const [approving, setApproving] = useState(null)
 
-  const load = () => {
+  // BUG-4 FIX: was a plain function recreated on every render — unsafe to use
+  // as a useEffect dependency. Wrapped in useCallback for a stable reference.
+  const load = useCallback(() => {
     adminService.getPendingRecruiters()
-      .then(r => setPending(r.data))
+      .then(r => setPending(r.data ?? []))
+      .catch(() => setPending([]))
       .finally(() => setLoading(false))
-  }
+  }, [])
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [load])
 
   const approve = async (id, _company) => {
     setApproving(id)
