@@ -91,7 +91,9 @@ public class JobPostingService {
         if (req.getSalaryRange() != null)         job.setSalaryRange(req.getSalaryRange());
         if (req.getApplicationDeadline() != null) job.setApplicationDeadline(req.getApplicationDeadline());
         if (req.getExperienceLevel() != null)     job.setExperienceLevel(req.getExperienceLevel());
-        if (req.getStatus() != null)              job.setStatus(req.getStatus());
+        // BUG-11 FIX: do NOT apply req.getStatus() here — a recruiter could self-approve
+        // a PENDING_APPROVAL job by sending status=ACTIVE in the PUT body, bypassing admin review.
+        // Status changes must go through the dedicated PATCH /jobs/{jobId}/status endpoint.
 
         return jobPostingRepository.save(job);
     }
