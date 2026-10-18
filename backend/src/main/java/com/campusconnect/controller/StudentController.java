@@ -40,6 +40,10 @@ public class StudentController {
     // ── Profile ───────────────────────────────────────────────────────────
 
     @GetMapping("/profile")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    // BUG-10 FIX: without @Transactional the Hibernate session closes before
+    // Jackson serializes the lazy-loaded `user` field on StudentProfile,
+    // causing LazyInitializationException in certain configurations.
     public ResponseEntity<StudentProfile> getProfile(@AuthenticationPrincipal UserDetailsImpl user) {
         return ResponseEntity.ok(profileService.getProfile(user.getId()));
     }
