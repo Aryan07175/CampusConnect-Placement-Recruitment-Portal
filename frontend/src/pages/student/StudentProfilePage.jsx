@@ -53,7 +53,10 @@ export default function StudentProfilePage() {
     setUploading(true)
     try {
       const r = await studentService.uploadResume(file)
+      // BUG-7 FIX: was only calling setProfile but not setForm, causing the
+      // displayed profile data in the form to be stale after upload.
       setProfile(r.data)
+      setForm(f => ({ ...f, ...r.data }))
     } catch { setError('Resume upload failed.') }
     finally { setUploading(false) }
   }
