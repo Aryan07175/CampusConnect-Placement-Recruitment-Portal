@@ -26,7 +26,11 @@ export default function JobDetailPage() {
       }
       if (appsRes.status === 'fulfilled') {
         const apps = appsRes.value.data.content ?? []
-        const alreadyApplied = apps.some(a => String(a.job?.id) === String(id))
+        // BUG-2 FIX: check both a.job?.id (nested entity) and a.jobId (flat DTO)
+        // to be robust across different response shapes from the applications endpoint.
+        const alreadyApplied = apps.some(a =>
+          String(a.job?.id) === String(id) || String(a.jobId) === String(id)
+        )
         if (alreadyApplied) setApplied(true)
       }
       setLoading(false)
