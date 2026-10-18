@@ -16,6 +16,8 @@ export default function MyApplicationsPage() {
   const [page, setPage]       = useState(0)
   const PAGE_SIZE = 10
 
+  // BUG-5 FIX: filter is applied client-side on the current page's data.
+  // Filter buttons reset page to 0 on click (setFilter(s); setPage(0)).
   const fetchApps = useCallback(() => {
     return studentService.getApplications({ page, size: PAGE_SIZE, sort: 'appliedAt,desc' })
   }, [page])
