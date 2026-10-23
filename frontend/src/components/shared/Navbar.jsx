@@ -29,6 +29,7 @@ export default function Navbar() {
         { to: '/admin',                label: 'Dashboard' },
         { to: '/admin/users',          label: 'Users' },
         { to: '/admin/recruiters',     label: 'Approvals' },
+        { to: '/admin/jobs',           label: 'Job Queue' },
       ]
     : []
 

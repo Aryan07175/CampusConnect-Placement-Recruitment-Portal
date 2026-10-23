@@ -24,11 +24,18 @@ const PIE_COLORS = ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981']
 
 export default function AdminDashboard() {
   const [stats, setStats]   = useState(null)
+  const [pendingJobs, setPendingJobs] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    adminService.getStats()
-      .then(r => setStats(r.data))
+    Promise.allSettled([
+      adminService.getStats(),
+      adminService.getPendingJobs({ size: 1 }),
+    ])
+      .then(([statsRes, jobsRes]) => {
+        if (statsRes.status === 'fulfilled') setStats(statsRes.value.data)
+        if (jobsRes.status === 'fulfilled') setPendingJobs(jobsRes.value.data.totalElements ?? 0)
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -71,6 +78,18 @@ export default function AdminDashboard() {
             <p className="text-xs text-slate-500 mt-0.5">Review and approve before recruiters can post jobs.</p>
           </div>
           <Link to="/admin/recruiters" className="btn-primary text-sm shrink-0">Review</Link>
+        </div>
+      )}
+
+      {pendingJobs > 0 && (
+        <div className="card border-l-4 border-l-indigo-400 flex items-center justify-between gap-4">
+          <div>
+            <p className="font-semibold text-sm text-neutral-dark">
+              📋 {pendingJobs} job posting{pendingJobs !== 1 ? 's' : ''} awaiting approval
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">Review and approve before students can apply.</p>
+          </div>
+          <Link to="/admin/jobs" className="btn-primary text-sm shrink-0">Review</Link>
         </div>
       )}
 
@@ -173,6 +192,17 @@ export default function AdminDashboard() {
               <p className="text-xs text-slate-500">Approve companies to post job listings</p>
               {s.pendingApprovals > 0 && (
                 <span className="text-xs font-semibold text-warning">{s.pendingApprovals} pending</span>
+              )}
+            </div>
+            <span className="ml-auto text-slate-300">→</span>
+          </Link>
+          <Link to="/admin/jobs" className="card hover:shadow-card-md transition-all flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-xl">📋</div>
+            <div>
+              <p className="font-semibold text-sm text-neutral-dark">Job Approval Queue</p>
+              <p className="text-xs text-slate-500">Review and approve pending job postings</p>
+              {pendingJobs > 0 && (
+                <span className="text-xs font-semibold text-indigo-600">{pendingJobs} pending</span>
               )}
             </div>
             <span className="ml-auto text-slate-300">→</span>

@@ -24,6 +24,7 @@ import ApplicantsPage     from './pages/recruiter/ApplicantsPage'
 import AdminDashboard   from './pages/admin/AdminDashboard'
 import AdminUsersPage   from './pages/admin/AdminUsersPage'
 import AdminRecruitersPage from './pages/admin/AdminRecruitersPage'
+import AdminJobsPage    from './pages/admin/AdminJobsPage'
 
 function RootRedirect() {
   const { isAuthenticated, role } = useAuth()
@@ -118,6 +119,11 @@ export default function App() {
           <Route path="/admin/recruiters" element={
             <PrivateRoute allowedRole="ROLE_ADMIN">
               <Layout><AdminRecruitersPage /></Layout>
+            </PrivateRoute>
+          } />
+          <Route path="/admin/jobs" element={
+            <PrivateRoute allowedRole="ROLE_ADMIN">
+              <Layout><AdminJobsPage /></Layout>
             </PrivateRoute>
           } />
 

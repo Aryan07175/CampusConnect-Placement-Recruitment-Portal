@@ -55,6 +55,9 @@ export const adminService = {
   deleteUser:           (id) => api.delete(`/api/admin/users/${id}`),
   getPendingRecruiters: ()   => api.get('/api/admin/recruiters/pending'),
   approveRecruiter:     (id) => api.post(`/api/admin/recruiters/${id}/approve`),
+  // BUG-27 FIX: job approval endpoints were missing from the frontend service
+  getPendingJobs:       (p)  => api.get('/api/admin/jobs/pending', { params: p }),
+  approveJob:           (id) => api.post(`/api/admin/jobs/${id}/approve`),
 }
 
 // Phase 4 — Skill-match recommendation service
