@@ -91,13 +91,15 @@ export default function RecruiterJobsPage() {
   const toggleStatus = async (job) => {
     setTogglingId(job.id)
     try {
-      const newStatus = job.status === 'ACTIVE' ? 'CLOSED' : 'ACTIVE'
+      const newStatus = job.status === 'ACTIVE' ? 'CLOSED' : 'PENDING_APPROVAL'
       // BUG-05 FIX: use the dedicated PATCH /status endpoint instead of
       // PUT (full update) which can corrupt job data — the full JobPosting
       // entity object has a nested recruiter field that doesn't match the
       // JobPostingRequest DTO shape expected by the PUT endpoint.
-      await recruiterService.toggleJobStatus(job.id, newStatus)
-      setJobs(j => j.map(x => x.id === job.id ? { ...x, status: newStatus } : x))
+      // BUG-26 FIX: backend now maps ACTIVE back to PENDING_APPROVAL for security,
+      // so we send PENDING_APPROVAL directly and use the server response to update state.
+      const { data: updatedJob } = await recruiterService.toggleJobStatus(job.id, newStatus)
+      setJobs(j => j.map(x => x.id === job.id ? { ...x, status: updatedJob.status } : x))
     } catch (err) {
       setError(err.response?.data?.message ?? 'Failed to update job status.')
     } finally { setTogglingId(null) }
@@ -237,8 +239,9 @@ function JobRow({ job, onEdit, onDelete, onToggle, toggling }) {
             View Applicants
           </Link>
           <button onClick={() => onEdit(job)} className="btn-secondary text-xs px-3 py-1.5">Edit</button>
-          <button onClick={() => onToggle(job)} disabled={toggling} className="btn-secondary text-xs px-3 py-1.5">
-            {toggling ? '…' : isActive ? 'Close' : 'Reopen'}
+          <button onClick={() => onToggle(job)} disabled={toggling} className="btn-secondary text-xs px-3 py-1.5"
+            title={!isActive ? 'Re-submits for admin approval' : ''}>
+            {toggling ? '…' : isActive ? 'Close' : 'Re-submit'}
           </button>
           <button onClick={() => onDelete(job.id, job.title)} className="btn-danger text-xs px-3 py-1.5">Delete</button>
         </div>

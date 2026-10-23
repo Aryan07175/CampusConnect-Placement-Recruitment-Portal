@@ -106,7 +106,13 @@ public class JobPostingService {
         if (!job.getRecruiter().getId().equals(recruiterId)) {
             throw new BadRequestException("You are not authorized to update this job posting.");
         }
-        job.setStatus(status);
+        // BUG-26 FIX: recruiters must not be able to self-approve a job back to ACTIVE.
+        // A closed job must go through admin approval again.
+        // Map any recruiter-supplied ACTIVE status to PENDING_APPROVAL instead.
+        JobPosting.JobStatus safeStatus = status == JobPosting.JobStatus.ACTIVE
+                ? JobPosting.JobStatus.PENDING_APPROVAL
+                : status;
+        job.setStatus(safeStatus);
         return jobPostingRepository.save(job);
     }
 
