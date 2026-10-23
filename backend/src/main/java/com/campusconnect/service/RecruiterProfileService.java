@@ -39,8 +39,13 @@ public class RecruiterProfileService {
     }
 
     public RecruiterProfile getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        // BUG-25 FIX: was throwing 404 if no profile existed, crashing the
+        // recruiter dashboard and profile page on first login.
+        // Return an empty shell (same pattern as StudentProfileService.getProfile).
         return profileRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("RecruiterProfile", "userId", userId));
+                .orElseGet(() -> RecruiterProfile.builder().user(user).build());
     }
 
     public List<RecruiterProfile> getPendingApprovals() {
