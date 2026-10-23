@@ -19,11 +19,20 @@ export default function RecruiterProfilePage() {
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSave = async e => {
-    e.preventDefault(); setSaving(true); setError('')
+    e.preventDefault()
+    // BUG-28 FIX: add client-side guard before hitting the server
+    if (!form.companyName?.trim()) {
+      setError('Company name is required.')
+      return
+    }
+    setSaving(true); setError('')
     try {
       await recruiterService.upsertProfile(form)
       setSaved(true); setTimeout(() => setSaved(false), 3000)
-    } catch { setError('Failed to save. Please try again.') }
+    } catch (err) {
+      // BUG-28 FIX: was a bare catch {} that silently swallowed server error messages.
+      setError(err.response?.data?.companyName ?? err.response?.data?.message ?? 'Failed to save. Please try again.')
+    }
     finally { setSaving(false) }
   }
 
