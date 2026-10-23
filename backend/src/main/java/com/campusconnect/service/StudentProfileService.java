@@ -45,6 +45,7 @@ public class StudentProfileService {
         return profileRepository.save(profile);
     }
 
+    @Transactional(readOnly = true)
     public StudentProfile getProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
@@ -87,6 +88,7 @@ public class StudentProfileService {
 
         profile.setResumePath(filePath.toString());
         profile.setResumeOriginalName(file.getOriginalFilename());
+        profile.setProfileComplete(isComplete(profile));
         return profileRepository.save(profile);
     }
 

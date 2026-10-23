@@ -62,6 +62,25 @@ public class StudentController {
         return ResponseEntity.ok(profileService.uploadResume(user.getId(), file));
     }
 
+    @GetMapping("/profile/resume")
+    public ResponseEntity<org.springframework.core.io.Resource> getResume(
+            @AuthenticationPrincipal UserDetailsImpl user) throws IOException {
+        StudentProfile profile = profileService.getProfile(user.getId());
+        if (profile.getResumePath() == null) {
+            throw new com.campusconnect.exception.ResourceNotFoundException("Resume", "userId", user.getId());
+        }
+        java.nio.file.Path path = java.nio.file.Paths.get(profile.getResumePath());
+        if (!java.nio.file.Files.exists(path)) {
+            throw new com.campusconnect.exception.ResourceNotFoundException("Resume file", "path", profile.getResumePath());
+        }
+        org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(path.toUri());
+        String filename = profile.getResumeOriginalName() != null ? profile.getResumeOriginalName() : "resume.pdf";
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                .body(resource);
+    }
+
     // ── Job Listings ──────────────────────────────────────────────────────
 
     @GetMapping("/jobs")
