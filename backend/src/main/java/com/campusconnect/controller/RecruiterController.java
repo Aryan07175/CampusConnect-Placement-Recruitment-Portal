@@ -9,6 +9,7 @@ import com.campusconnect.entity.Application;
 import com.campusconnect.entity.Application.ApplicationStatus;
 import com.campusconnect.entity.JobPosting;
 import com.campusconnect.entity.RecruiterProfile;
+import com.campusconnect.exception.BadRequestException;
 import com.campusconnect.security.UserDetailsImpl;
 import com.campusconnect.service.ApplicationService;
 import com.campusconnect.service.InterviewService;
@@ -82,7 +83,16 @@ public class RecruiterController {
             @AuthenticationPrincipal UserDetailsImpl user,
             @PathVariable Long jobId,
             @RequestBody Map<String, String> body) {
-        JobPosting.JobStatus status = JobPosting.JobStatus.valueOf(body.get("status"));
+        String rawStatus = body != null ? body.get("status") : null;
+        if (rawStatus == null || rawStatus.isBlank()) {
+            throw new BadRequestException("Job status is required.");
+        }
+        JobPosting.JobStatus status;
+        try {
+            status = JobPosting.JobStatus.valueOf(rawStatus.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid job status: '" + rawStatus + "'. Allowed values: DRAFT, PENDING_APPROVAL, ACTIVE, PAUSED, CLOSED.");
+        }
         return ResponseEntity.ok(jobPostingService.updateStatus(user.getId(), jobId, status));
     }
 
@@ -110,8 +120,17 @@ public class RecruiterController {
             @AuthenticationPrincipal UserDetailsImpl user,
             @PathVariable Long appId,
             @RequestBody Map<String, String> body) {
-        ApplicationStatus status = ApplicationStatus.valueOf(body.get("status"));
-        String notes = body.get("notes");
+        String rawStatus = body != null ? body.get("status") : null;
+        if (rawStatus == null || rawStatus.isBlank()) {
+            throw new BadRequestException("Application status is required.");
+        }
+        ApplicationStatus status;
+        try {
+            status = ApplicationStatus.valueOf(rawStatus.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid application status: '" + rawStatus + "'. Allowed values: APPLIED, UNDER_REVIEW, SHORTLISTED, INTERVIEW_SCHEDULED, REJECTED, OFFERED, PLACED.");
+        }
+        String notes = body != null ? body.get("notes") : null;
         // BUG-06 FIX: pass recruiterId so the service can verify ownership
         return ResponseEntity.ok(applicationService.updateStatus(appId, user.getId(), status, notes));
     }
