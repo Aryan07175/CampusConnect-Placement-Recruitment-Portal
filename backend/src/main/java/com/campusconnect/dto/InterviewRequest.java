@@ -15,7 +15,9 @@ import java.time.LocalDateTime;
 @Data
 public class InterviewRequest {
 
-    @NotNull(message = "Application ID is required")
+    // BUG-4 FIX: was @NotNull — PUT /interviews/{id} reuses this DTO for reschedule.
+    // The interview is already linked; clients should not need to re-send applicationId.
+    // Making it optional lets the update endpoint work naturally.
     private Long applicationId;
 
     private InterviewRound round = InterviewRound.SCREENING;

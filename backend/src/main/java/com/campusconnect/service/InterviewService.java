@@ -30,6 +30,9 @@ public class InterviewService {
      */
     @Transactional
     public InterviewDTO schedule(Long recruiterId, InterviewRequest req) {
+        if (req.getApplicationId() == null) {
+            throw new BadRequestException("Application ID is required to schedule an interview.");
+        }
         Application app = applicationRepository.findById(req.getApplicationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Application", "id", req.getApplicationId()));
 
