@@ -79,15 +79,25 @@ public class StudentProfileService {
         }
 
         String uploadDir = "uploads/resumes";
-        Path uploadPath = Paths.get(uploadDir);
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
 
-        String filename = userId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path filePath = uploadPath.resolve(filename);
+        String rawOriginal = file.getOriginalFilename();
+        String safeName = "resume.pdf";
+        if (rawOriginal != null && !rawOriginal.isBlank()) {
+            safeName = Paths.get(rawOriginal).getFileName().toString().replaceAll("[^a-zA-Z0-9._-]", "_");
+            if (safeName.isBlank()) safeName = "resume.pdf";
+        }
+
+        String filename = userId + "_" + System.currentTimeMillis() + "_" + safeName;
+        Path filePath = uploadPath.resolve(filename).normalize();
+        if (!filePath.startsWith(uploadPath)) {
+            throw new BadRequestException("Invalid file path");
+        }
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         profile.setResumePath(filePath.toString());
-        profile.setResumeOriginalName(file.getOriginalFilename());
+        profile.setResumeOriginalName(safeName);
         profile.setProfileComplete(isComplete(profile));
         return profileRepository.save(profile);
     }
