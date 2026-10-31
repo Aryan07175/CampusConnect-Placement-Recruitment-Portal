@@ -49,6 +49,10 @@ public class ApplicationService {
             throw new BadRequestException("This job posting is no longer accepting applications.");
         }
 
+        if (job.getApplicationDeadline() != null && job.getApplicationDeadline().isBefore(java.time.LocalDate.now())) {
+            throw new BadRequestException("The application deadline for this job has passed.");
+        }
+
         int score = 0;
         StudentProfile profile = studentProfileRepository.findByUserId(studentUserId).orElse(null);
         if (profile != null) {
@@ -108,11 +112,7 @@ public class ApplicationService {
                     .collect(Collectors.toList());
         }
 
-        boolean profileComplete = profile != null
-                && profile.getCollege() != null
-                && profile.getDegree() != null
-                && profile.getSkills() != null
-                && profile.getResumePath() != null;
+        boolean profileComplete = profile != null && profile.isProfileComplete();
 
         return ApplicationDetailsDTO.builder()
                 .applicationId(app.getId())
