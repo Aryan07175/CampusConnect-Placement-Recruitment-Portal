@@ -52,7 +52,7 @@ export default function JobDetailPage() {
   if (!job) return null
 
   const skills = (job.requiredSkills ?? '').split(',').map(s => s.trim()).filter(Boolean)
-  const isPast = job.applicationDeadline && new Date(job.applicationDeadline) < new Date()
+  const isPast = job.applicationDeadline && new Date(`${job.applicationDeadline.split('T')[0]}T23:59:59`) < new Date()
 
   return (
     <div className="page-container max-w-4xl mx-auto">
