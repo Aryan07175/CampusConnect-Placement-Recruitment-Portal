@@ -42,6 +42,9 @@ export default function MyApplicationsPage() {
   }, [fetchApps])
 
   const filtered = filter === 'All' ? apps : apps.filter(a => a.status === filter)
+  // B-03 FIX: when a status filter is active, show filtered count for pagination;
+  // otherwise use totalElements from the API (accurate server-side total).
+  const displayTotal = filter === 'All' ? total : filtered.length
 
   return (
     <div className="page-container space-y-6">
@@ -81,12 +84,12 @@ export default function MyApplicationsPage() {
         </div>
       )}
 
-      {total > PAGE_SIZE && (
+      {displayTotal > PAGE_SIZE && (
         <div className="flex items-center justify-center gap-2">
           <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
             className="btn-secondary text-sm disabled:opacity-40">← Prev</button>
-          <span className="text-sm text-slate-500">Page {page + 1}</span>
-          <button onClick={() => setPage(p => p + 1)} disabled={(page + 1) * PAGE_SIZE >= total}
+          <span className="text-sm text-slate-500">Page {page + 1} of {Math.ceil(displayTotal / PAGE_SIZE)}</span>
+          <button onClick={() => setPage(p => p + 1)} disabled={(page + 1) * PAGE_SIZE >= displayTotal}
             className="btn-secondary text-sm disabled:opacity-40">Next →</button>
         </div>
       )}
