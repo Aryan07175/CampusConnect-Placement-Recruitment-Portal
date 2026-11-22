@@ -41,8 +41,23 @@ export default function RegisterPage() {
       navigate(form.role === 'RECRUITER' ? '/recruiter' : '/student', { replace: true })
     } catch (err) {
       const msg = err.response?.data
-      if (typeof msg === 'object') setErrors(msg)
-      else setError(msg?.message ?? 'Registration failed. Please try again.')
+      // B-05 FIX: if the API returns an object with a top-level 'message' key
+      // (e.g. {message: "Username already taken"}), it previously fell into the
+      // typeof-object branch and called setErrors({message: "..."}), which silently
+      // dropped the error because no field renders errors.message.
+      // Now: if msg is an object WITHOUT field-level keys (only has 'message'),
+      // treat it as a banner error instead of field errors.
+      if (typeof msg === 'object' && msg !== null) {
+        const keys = Object.keys(msg)
+        if (keys.length === 1 && keys[0] === 'message') {
+          setError(msg.message ?? 'Registration failed. Please try again.')
+        } else {
+          // Field-level validation errors from the backend
+          setErrors(msg)
+        }
+      } else {
+        setError(msg ?? 'Registration failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
