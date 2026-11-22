@@ -8,7 +8,7 @@ import EmptyState from '../../components/shared/EmptyState'
 const JOB_TYPES = ['All', 'Full-time', 'Internship', 'Part-time', 'Contract']
 
 export default function JobListPage() {
-  const [jobs, setJobs]       = useState([])
+  const [jobs, setJobs]       = useState([])  // raw API results (all active jobs)
   const [loading, setLoading] = useState(true)
   const [keyword, setKeyword] = useState('')
   const [search, setSearch]   = useState('')
@@ -40,13 +40,14 @@ export default function JobListPage() {
             })
           }
 
-          // Use recommendation results if available (they already include all active jobs
-          // plus match scores). Fall back to plain job list if recs failed.
+          // B-02 FIX: Store ALL fetched jobs in state — do NOT apply the keyword search
+          // filter here. The effect was previously baking the search into the jobs array,
+          // so clearing search didn't restore all jobs (effect wouldn't re-run because
+          // fetchJobs is stable). Now search is applied at render time below.
           let results = []
           if (recsRes.status === 'fulfilled' && recsRes.value.data?.length > 0) {
             results = recsRes.value.data ?? []
           } else if (jobsRes.status === 'fulfilled') {
-            // Merge plain jobs with any partial score data we have
             results = (jobsRes.value.data?.content ?? []).map(j => ({
               ...j,
               jobId: j.id,
@@ -55,20 +56,12 @@ export default function JobListPage() {
             }))
           }
 
-          if (search) {
-            const lowerSearch = search.toLowerCase()
-            results = results.filter(j =>
-              (j.title && j.title.toLowerCase().includes(lowerSearch)) ||
-              (j.companyName && j.companyName.toLowerCase().includes(lowerSearch)) ||
-              (j.requiredSkills && j.requiredSkills.toLowerCase().includes(lowerSearch))
-            )
-          }
           setJobs(results)
           setLoading(false)
         }
       })
     return () => { ignore = true }
-  }, [fetchJobs, search])
+  }, [fetchJobs])  // B-02 FIX: removed `search` dependency — search filters at render time
 
   const handleSearch = (e) => { e.preventDefault(); setSearch(keyword); setPage(0) }
 
@@ -76,7 +69,16 @@ export default function JobListPage() {
   // end up on a page that doesn't exist for the filtered result set.
   const handleJobTypeChange = (type) => { setJobType(type); setPage(0) }
 
-  const filtered = jobType === 'All' ? jobs : jobs.filter(j => j.jobType === jobType)
+  // B-02 FIX: apply search AND type filter at render time against the full raw jobs list
+  const searchFiltered = search
+    ? jobs.filter(j => {
+        const q = search.toLowerCase()
+        return (j.title && j.title.toLowerCase().includes(q)) ||
+               (j.companyName && j.companyName.toLowerCase().includes(q)) ||
+               (j.requiredSkills && j.requiredSkills.toLowerCase().includes(q))
+      })
+    : jobs
+  const filtered = jobType === 'All' ? searchFiltered : searchFiltered.filter(j => j.jobType === jobType)
   const filteredTotal = filtered.length
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
